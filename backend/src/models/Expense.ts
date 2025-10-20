@@ -44,6 +44,35 @@ const expenseSchema = new Schema<IExpense>(
       type: String,
       ref: 'Household',
     },
+    currency: {
+      type: String,
+      default: 'EUR',
+      enum: ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY'],
+    },
+    attachments: [
+      {
+        filename: {
+          type: String,
+          required: true,
+        },
+        originalName: {
+          type: String,
+          required: true,
+        },
+        mimetype: {
+          type: String,
+          required: true,
+        },
+        size: {
+          type: Number,
+          required: true,
+        },
+        url: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
   },
   {
     timestamps: true,

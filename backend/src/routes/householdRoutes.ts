@@ -8,6 +8,11 @@ import {
   deleteHousehold,
   joinHousehold,
   leaveHousehold,
+  addMemberByEmail,
+  removeMember,
+  addContribution,
+  getContributionStats,
+  updateHouseholdBudget,
 } from '../controllers/householdController';
 import { authenticate } from '../middleware/auth';
 import { validate } from '../middleware/validate';
@@ -49,6 +54,33 @@ router.post('/:id/join', joinHousehold);
 
 // Leave household
 router.post('/:id/leave', leaveHousehold);
+
+// Add member by email
+router.post(
+  '/:id/members',
+  validate([
+    body('email').isEmail().withMessage('Valid email is required'),
+  ]),
+  addMemberByEmail
+);
+
+// Remove member
+router.delete('/:id/members/:memberId', removeMember);
+
+// Add contribution
+router.post(
+  '/:id/contributions',
+  validate([
+    body('amount').isFloat({ min: 0.01 }).withMessage('Amount must be a positive number'),
+  ]),
+  addContribution
+);
+
+// Get contribution statistics
+router.get('/:id/contributions/stats', getContributionStats);
+
+// Update household budget
+router.put('/:id/budget', updateHouseholdBudget);
 
 export default router;
 

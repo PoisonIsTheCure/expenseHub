@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import path from 'path';
 import { connectDatabase } from './config/database';
 import { createDefaultAdmin } from './utils/createAdmin';
 
@@ -11,6 +12,7 @@ import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import householdRoutes from './routes/householdRoutes';
 import expenseRoutes from './routes/expenseRoutes';
+import budgetRoutes from './routes/budgetRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -31,6 +33,9 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Health check endpoint
 app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'ExpenseHub API is running' });
@@ -41,6 +46,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/households', householdRoutes);
 app.use('/api/expenses', expenseRoutes);
+app.use('/api/budgets', budgetRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {

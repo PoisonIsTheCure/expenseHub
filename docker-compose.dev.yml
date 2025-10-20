@@ -30,6 +30,7 @@ services:
       ADMIN_PASSWORD: Admin@123456
     volumes:
       - ./backend/src:/app/src
+      - uploads_data_dev:/app/uploads
     depends_on:
       - mongodb
     networks:
@@ -58,6 +59,7 @@ services:
 
 volumes:
   mongodb_data_dev:
+  uploads_data_dev:
 
 networks:
   expensehub-network-dev:

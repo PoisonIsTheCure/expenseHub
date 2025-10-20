@@ -1,15 +1,28 @@
 # ExpenseHub - Full-Stack Expense Tracking Application
 
-A comprehensive expense tracking and sharing application built with TypeScript, React, Express, MongoDB, and Docker.
+A comprehensive expense tracking and sharing application built with TypeScript, React, Express, MongoDB, and Docker. Now enhanced with budget management, multi-currency support, receipt uploads, and mobile-first responsive design.
 
 ## 🚀 Features
 
+### Core Features
 - **Authentication & Authorization**: JWT-based authentication with role-based access control (Admin/User)
 - **User Management**: Admin-controlled user creation and management
 - **Personal Expenses**: Track individual expenses with categories and descriptions
 - **Household Sharing**: Create households and share expenses among members
+
+### New Features ✨
+- **Budget Management**: Personal and household budget tracking with visual progress indicators
+- **Multi-Currency Support**: Support for 8 major currencies (EUR, USD, GBP, JPY, CAD, AUD, CHF, CNY) with EUR as default
+- **Receipt Uploads**: Upload and attach receipts (PDF and images) to expenses
+- **Mobile-First Design**: Fully responsive interface optimized for mobile devices
+- **Enhanced UX**: Loading states, empty states, and toast notifications
+- **File Storage**: Persistent storage for uploaded receipts with Docker volumes
+
+### Technical Features
 - **Responsive UI**: Modern, mobile-friendly interface built with Tailwind CSS
-- **Fully Dockerized**: Easy deployment with Docker Compose
+- **Fully Dockerized**: Easy deployment with Docker Compose and Nginx
+- **Type Safety**: Full TypeScript implementation across frontend and backend
+- **Error Handling**: Comprehensive error handling and user feedback
 
 ## 🏗️ Architecture
 
@@ -29,6 +42,8 @@ expenseHub/
 - MongoDB with Mongoose ODM
 - JWT Authentication
 - Express Validator
+- Multer (File Uploads)
+- Currency Conversion Utilities
 
 ### Frontend
 - React 18
@@ -38,11 +53,13 @@ expenseHub/
 - Redux Toolkit
 - React Router
 - Axios
+- Context API (Toast Notifications)
 
 ### DevOps
 - Docker & Docker Compose
 - Nginx (Reverse Proxy)
 - MongoDB (Database)
+- Persistent Volumes (File Storage)
 
 ## 📋 Prerequisites
 
@@ -61,7 +78,7 @@ cd expenseHub
 
 2. Create environment file:
 ```bash
-cp .env.example .env
+cp env.example .env
 # Edit .env with your configuration
 ```
 
@@ -86,7 +103,7 @@ docker-compose up --build
 ```bash
 cd backend
 npm install
-cp .env.example .env
+cp ../env.example .env
 # Edit .env and set MONGODB_URI to your local MongoDB
 npm run dev
 ```
@@ -123,21 +140,31 @@ npm run dev
 
 ### Expenses
 - `GET /api/expenses` - List expenses (personal + household)
-- `POST /api/expenses` - Create expense
+- `POST /api/expenses` - Create expense (supports file uploads)
 - `GET /api/expenses/:id` - Get expense details
 - `PUT /api/expenses/:id` - Update expense
 - `DELETE /api/expenses/:id` - Delete expense
 - `GET /api/expenses/household/:householdId` - Get household expenses
 
+### Budget Management
+- `GET /api/budgets/personal` - Get personal budget information
+- `PUT /api/budgets/personal` - Update personal budget
+- `GET /api/budgets/household/:householdId` - Get household budget information
+- `PUT /api/budgets/household/:householdId` - Update household budget
+- `POST /api/budgets/household/:householdId/contribution` - Add household budget contribution
+
 ## 🔐 Environment Variables
 
-See `.env.example` for all available configuration options.
+See `env.example` for all available configuration options.
 
 Key variables:
 - `JWT_SECRET` - Secret key for JWT tokens
 - `ADMIN_EMAIL` - Default admin email
 - `ADMIN_PASSWORD` - Default admin password
 - `MONGODB_URI` - MongoDB connection string
+- `NODE_ENV` - Environment (development/production)
+- `PORT` - Backend server port (default: 5000)
+- `CORS_ORIGIN` - CORS allowed origins
 
 ## 🎨 Default Admin Account
 
@@ -151,6 +178,50 @@ The application creates a default admin account on first startup:
 
 - **Admin**: Can create/manage users, access admin panel, manage all data
 - **User**: Can manage personal expenses, join/create households, view shared expenses
+
+## 💰 Budget Management
+
+### Personal Budgets
+- Set monthly spending limits in your preferred currency
+- Visual progress indicators showing spent vs remaining budget
+- Automatic monthly reset based on date
+- Real-time budget tracking with expense integration
+
+### Household Budgets
+- Shared budget limits for household expenses
+- Member contributions tracking
+- Visual breakdown of spending vs budget
+- Collaborative budget management
+
+## 💱 Multi-Currency Support
+
+ExpenseHub supports 8 major currencies:
+- **EUR** (Euro) - Default currency
+- **USD** (US Dollar)
+- **GBP** (British Pound)
+- **JPY** (Japanese Yen)
+- **CAD** (Canadian Dollar)
+- **AUD** (Australian Dollar)
+- **CHF** (Swiss Franc)
+- **CNY** (Chinese Yuan)
+
+All amounts are stored internally in EUR and converted dynamically for display based on user preferences.
+
+## 📎 Receipt Management
+
+- Upload multiple receipt files (PDF and images)
+- Support for up to 5 files per expense
+- Maximum file size: 10MB per file
+- Persistent storage with Docker volumes
+- Direct file access through Nginx proxy
+
+## 📱 Mobile-First Design
+
+- Responsive design optimized for mobile devices
+- Touch-friendly interface elements
+- Mobile bottom navigation bar
+- Single-column layouts for small screens
+- Optimized for screen widths from 360px to 1440px
 
 ## 🐳 Docker Commands
 

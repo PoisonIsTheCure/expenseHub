@@ -10,6 +10,7 @@ import {
 } from '../controllers/expenseController';
 import { authenticate } from '../middleware/auth';
 import { validate } from '../middleware/validate';
+import { uploadReceipts } from '../middleware/upload';
 
 const router = Router();
 
@@ -22,6 +23,7 @@ router.get('/', getAllExpenses);
 // Create expense
 router.post(
   '/',
+  uploadReceipts,
   validate([
     body('amount')
       .isFloat({ min: 0 })
@@ -43,6 +45,10 @@ router.post(
       .withMessage('Invalid category'),
     body('date').optional().isISO8601().withMessage('Invalid date format'),
     body('householdId').optional().isMongoId().withMessage('Invalid household ID'),
+    body('currency')
+      .optional()
+      .isIn(['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY'])
+      .withMessage('Invalid currency'),
   ]),
   createExpense
 );

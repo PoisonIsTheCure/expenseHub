@@ -7,69 +7,120 @@ export const getAllExpenses = async (req: AuthRequest, res: Response): Promise<v
   try {
     const userId = req.user?.id;
 
-    // Get user's personal expenses and household expenses
-    const expenses = await Expense.find({
-      $or: [
-        { ownerId: userId },
-        { householdId: { $exists: true } },
-      ],
+    if (!userId) {
+      res.status(401).json({ message: 'User not authenticated' });
+      return;
+    }
+
+    // Get user's personal expenses
+    const personalExpenses = await Expense.find({
+      ownerId: userId,
+      householdId: { $exists: false }
+    })
+      .populate('ownerId', 'name email')
+      .sort({ date: -1 });
+
+    // Get households where user is a member
+    const households = await Household.find({
+      members: userId
+    });
+
+    const householdIds = households.map(h => (h._id as any).toString());
+
+    // Get household expenses where user is a member
+    const householdExpenses = await Expense.find({
+      householdId: { $in: householdIds }
     })
       .populate('ownerId', 'name email')
       .populate('householdId', 'name')
       .sort({ date: -1 });
 
-    // Filter to only include household expenses where user is a member
-    const user = await require('../models/User').User.findById(userId);
-    const filteredExpenses = expenses.filter((expense) => {
-      if (!expense.householdId) {
-        return expense.ownerId.toString() === userId;
-      }
-      return true; // We'll verify household membership separately if needed
-    });
+    // Combine and sort all expenses
+    const allExpenses = [...personalExpenses, ...householdExpenses].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
 
-    res.json({ expenses: filteredExpenses });
+    res.json({ expenses: allExpenses });
   } catch (error: any) {
+    console.error('Error fetching expenses:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
 export const createExpense = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { amount, description, category, date, householdId } = req.body;
+    const { amount, description, category, date, householdId, currency } = req.body;
     const userId = req.user?.id;
+
+    console.log('Creating expense:', { amount, description, category, date, householdId, currency, userId });
+
+    // Validate required fields
+    if (!amount || !description || !category) {
+      console.log('Missing required fields:', { amount, description, category });
+      res.status(400).json({ message: 'Amount, description, and category are required' });
+      return;
+    }
+
+    if (!userId) {
+      console.log('No user ID found in request');
+      res.status(401).json({ message: 'User not authenticated' });
+      return;
+    }
 
     // Validate household membership if householdId provided
     if (householdId) {
       const household = await Household.findById(householdId);
       if (!household) {
+        console.log('Household not found:', householdId);
         res.status(404).json({ message: 'Household not found' });
         return;
       }
-      if (!household.members.includes(userId!)) {
+      if (!household.members.includes(userId)) {
+        console.log('User not a member of household:', { userId, householdId, members: household.members });
         res.status(403).json({ message: 'Not a member of this household' });
         return;
       }
     }
 
-    const expense = await Expense.create({
-      amount,
-      description,
+    const expenseData = {
+      amount: parseFloat(amount),
+      description: description.trim(),
       category,
-      date: date || new Date(),
+      date: date ? new Date(date) : new Date(),
       ownerId: userId,
-      householdId,
-    });
+      householdId: householdId || undefined,
+      currency: currency || 'EUR',
+      attachments: req.files ? (req.files as any[]).map((file: any) => ({
+        filename: file.filename,
+        originalName: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        url: `/uploads/${file.filename}`,
+      })) : [],
+    };
+
+    console.log('Creating expense with data:', expenseData);
+
+    const expense = await Expense.create(expenseData);
+    console.log('Expense created successfully:', expense._id);
 
     const populatedExpense = await Expense.findById(expense._id)
       .populate('ownerId', 'name email')
       .populate('householdId', 'name');
+
+    console.log('Expense populated successfully:', populatedExpense);
 
     res.status(201).json({
       message: 'Expense created successfully',
       expense: populatedExpense,
     });
   } catch (error: any) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Error creating expense:', error);
+    res.status(500).json({ 
+      message: 'Server error', 
+      error: error.message,
+      ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+    });
   }
 };
 
@@ -108,7 +159,7 @@ export const getExpenseById = async (req: AuthRequest, res: Response): Promise<v
 export const updateExpense = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user?.id;
-    const { amount, description, category, date } = req.body;
+    const { amount, description, category, date, householdId, currency } = req.body;
 
     const expense = await Expense.findById(req.params.id);
     if (!expense) {
@@ -122,10 +173,37 @@ export const updateExpense = async (req: AuthRequest, res: Response): Promise<vo
       return;
     }
 
-    if (amount !== undefined) expense.amount = amount;
-    if (description) expense.description = description;
+    // Validate household membership if householdId provided
+    if (householdId) {
+      const household = await Household.findById(householdId);
+      if (!household) {
+        res.status(404).json({ message: 'Household not found' });
+        return;
+      }
+      if (!household.members.includes(userId!)) {
+        res.status(403).json({ message: 'Not a member of this household' });
+        return;
+      }
+    }
+
+    if (amount !== undefined) expense.amount = parseFloat(amount);
+    if (description) expense.description = description.trim();
     if (category) expense.category = category;
-    if (date) expense.date = date;
+    if (date) expense.date = new Date(date);
+    if (householdId !== undefined) expense.householdId = householdId || undefined;
+    if (currency) expense.currency = currency;
+
+    // Handle file uploads if any
+    if (req.files && (req.files as any[]).length > 0) {
+      const newAttachments = (req.files as any[]).map((file: any) => ({
+        filename: file.filename,
+        originalName: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        url: `/uploads/${file.filename}`,
+      }));
+      expense.attachments = [...(expense.attachments || []), ...newAttachments];
+    }
 
     await expense.save();
 

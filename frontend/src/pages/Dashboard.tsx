@@ -5,14 +5,13 @@ import { RootState, AppDispatch } from '../store';
 import { fetchExpenses } from '../store/slices/expenseSlice';
 import { fetchHouseholds } from '../store/slices/householdSlice';
 import Layout from '../components/Layout';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1'];
 
 const Dashboard = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { expenses, loading } = useSelector((state: RootState) => state.expenses);
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { expenses } = useSelector((state: RootState) => state.expenses);
   const { households } = useSelector((state: RootState) => state.households);
 
   useEffect(() => {
@@ -68,19 +67,19 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="card bg-gradient-to-br from-primary-500 to-primary-600 text-white">
             <h3 className="text-lg font-medium mb-2 opacity-90">Total Expenses</h3>
-            <p className="text-3xl font-bold">${stats.total.toFixed(2)}</p>
+            <p className="text-3xl font-bold">€{stats.total.toFixed(2)}</p>
             <p className="text-sm mt-2 opacity-75">{expenses.length} total expenses</p>
           </div>
 
           <div className="card bg-gradient-to-br from-green-500 to-green-600 text-white">
             <h3 className="text-lg font-medium mb-2 opacity-90">Personal Expenses</h3>
-            <p className="text-3xl font-bold">${stats.personalTotal.toFixed(2)}</p>
+            <p className="text-3xl font-bold">€{stats.personalTotal.toFixed(2)}</p>
             <p className="text-sm mt-2 opacity-75">{stats.personalCount} expenses</p>
           </div>
 
           <div className="card bg-gradient-to-br from-purple-500 to-purple-600 text-white">
             <h3 className="text-lg font-medium mb-2 opacity-90">Household Expenses</h3>
-            <p className="text-3xl font-bold">${stats.householdTotal.toFixed(2)}</p>
+            <p className="text-3xl font-bold">€{stats.householdTotal.toFixed(2)}</p>
             <p className="text-sm mt-2 opacity-75">{stats.householdCount} expenses</p>
           </div>
         </div>
@@ -102,11 +101,11 @@ const Dashboard = () => {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {stats.chartData.map((entry, index) => (
+                    {stats.chartData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => `$${value}`} />
+                  <Tooltip formatter={(value) => `€${value}`} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
@@ -126,7 +125,7 @@ const Dashboard = () => {
                       <p className="text-sm text-gray-600">{expense.category}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-gray-900">${expense.amount.toFixed(2)}</p>
+                      <p className="font-semibold text-gray-900">€{expense.amount.toFixed(2)}</p>
                       <p className="text-xs text-gray-500">{new Date(expense.date).toLocaleDateString()}</p>
                     </div>
                   </div>

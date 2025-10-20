@@ -3,17 +3,21 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store';
 import { fetchExpenses, createExpense, updateExpense, deleteExpense } from '../store/slices/expenseSlice';
 import { fetchHouseholds } from '../store/slices/householdSlice';
+import { useToast } from '../contexts/ToastContext';
 import Layout from '../components/Layout';
 import ExpenseCard from '../components/ExpenseCard';
 import ExpenseForm from '../components/ExpenseForm';
 import Modal from '../components/Modal';
+import LoadingSpinner from '../components/LoadingSpinner';
+import EmptyState from '../components/EmptyState';
 import { Expense } from '../types';
 
 const Expenses = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { expenses, loading } = useSelector((state: RootState) => state.expenses);
+  const { expenses, loading, error } = useSelector((state: RootState) => state.expenses);
   const { user } = useSelector((state: RootState) => state.auth);
   const { households } = useSelector((state: RootState) => state.households);
+  const { showSuccess, showError } = useToast();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
@@ -24,6 +28,13 @@ const Expenses = () => {
     dispatch(fetchExpenses());
     dispatch(fetchHouseholds());
   }, [dispatch]);
+
+  // Show error toast when there's an error
+  useEffect(() => {
+    if (error) {
+      showError(error);
+    }
+  }, [error, showError]);
 
   const filteredExpenses = useMemo(() => {
     let filtered = [...expenses];
@@ -47,21 +58,48 @@ const Expenses = () => {
   }, [expenses]);
 
   const handleCreateExpense = async (data: any) => {
-    await dispatch(createExpense(data));
-    setIsModalOpen(false);
+    try {
+      const result = await dispatch(createExpense(data));
+      if (createExpense.fulfilled.match(result)) {
+        showSuccess('Expense created successfully!');
+        setIsModalOpen(false);
+      } else {
+        showError(result.payload as string || 'Failed to create expense');
+      }
+    } catch (error) {
+      showError('An unexpected error occurred');
+    }
   };
 
   const handleUpdateExpense = async (data: any) => {
     if (editingExpense) {
-      await dispatch(updateExpense({ id: editingExpense._id, data }));
-      setEditingExpense(null);
-      setIsModalOpen(false);
+      try {
+        const result = await dispatch(updateExpense({ id: editingExpense._id, data }));
+        if (updateExpense.fulfilled.match(result)) {
+          showSuccess('Expense updated successfully!');
+          setEditingExpense(null);
+          setIsModalOpen(false);
+        } else {
+          showError(result.payload as string || 'Failed to update expense');
+        }
+      } catch (error) {
+        showError('An unexpected error occurred');
+      }
     }
   };
 
   const handleDeleteExpense = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
-      await dispatch(deleteExpense(id));
+      try {
+        const result = await dispatch(deleteExpense(id));
+        if (deleteExpense.fulfilled.match(result)) {
+          showSuccess('Expense deleted successfully!');
+        } else {
+          showError(result.payload as string || 'Failed to delete expense');
+        }
+      } catch (error) {
+        showError('An unexpected error occurred');
+      }
     }
   };
 
@@ -82,27 +120,27 @@ const Expenses = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">Expenses</h1>
-          <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Expenses</h1>
+          <button onClick={() => setIsModalOpen(true)} className="btn btn-primary w-full sm:w-auto">
             Add Expense
           </button>
         </div>
 
         {/* Filters */}
         <div className="card">
-          <div className="flex flex-wrap gap-4">
-            <div className="flex-1 min-w-[200px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
               <label className="label">Type</label>
-              <select value={filter} onChange={(e) => setFilter(e.target.value as any)} className="input">
+              <select value={filter} onChange={(e) => setFilter(e.target.value as any)} className="input w-full">
                 <option value="all">All Expenses</option>
                 <option value="personal">Personal Only</option>
                 <option value="household">Household Only</option>
               </select>
             </div>
-            <div className="flex-1 min-w-[200px]">
+            <div>
               <label className="label">Category</label>
-              <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="input">
+              <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="input w-full">
                 <option value="all">All Categories</option>
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -123,6 +161,7 @@ const Expenses = () => {
         {/* Expenses List */}
         {loading ? (
           <div className="text-center py-12">
+            <LoadingSpinner size="lg" className="mb-4" />
             <p className="text-gray-500">Loading expenses...</p>
           </div>
         ) : filteredExpenses.length > 0 ? (
@@ -138,11 +177,20 @@ const Expenses = () => {
             ))}
           </div>
         ) : (
-          <div className="card text-center py-12">
-            <p className="text-gray-500 mb-4">No expenses found</p>
-            <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
-              Add Your First Expense
-            </button>
+          <div className="card">
+            <EmptyState
+              title="No expenses found"
+              description="Start tracking your expenses by adding your first expense entry."
+              action={{
+                label: "Add Your First Expense",
+                onClick: () => setIsModalOpen(true)
+              }}
+              icon={
+                <svg className="w-full h-full" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                </svg>
+              }
+            />
           </div>
         )}
 

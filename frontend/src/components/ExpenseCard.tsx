@@ -1,4 +1,4 @@
-import { Expense } from '../types';
+import { Expense, CURRENCIES } from '../types';
 
 interface ExpenseCardProps {
   expense: Expense;
@@ -8,8 +8,13 @@ interface ExpenseCardProps {
 }
 
 const ExpenseCard = ({ expense, onEdit, onDelete, currentUserId }: ExpenseCardProps) => {
-  const isOwner = currentUserId === expense.ownerId._id || currentUserId === expense.ownerId.id;
+  const isOwner = currentUserId === (expense.ownerId._id || expense.ownerId.id);
   const date = new Date(expense.date).toLocaleDateString();
+
+  const getCurrencySymbol = (currencyCode: string) => {
+    const currency = CURRENCIES.find(c => c.code === currencyCode);
+    return currency?.symbol || currencyCode;
+  };
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
@@ -47,7 +52,14 @@ const ExpenseCard = ({ expense, onEdit, onDelete, currentUserId }: ExpenseCardPr
           </p>
         </div>
         <div className="text-right ml-4">
-          <p className="text-2xl font-bold text-gray-900">${expense.amount.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-gray-900">
+            {getCurrencySymbol(expense.currency)}{expense.amount.toFixed(2)}
+          </p>
+          {expense.attachments && expense.attachments.length > 0 && (
+            <p className="text-xs text-gray-500 mt-1">
+              📎 {expense.attachments.length} attachment{expense.attachments.length > 1 ? 's' : ''}
+            </p>
+          )}
           {isOwner && (onEdit || onDelete) && (
             <div className="flex gap-2 mt-2">
               {onEdit && (

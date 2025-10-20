@@ -7,6 +7,11 @@ export interface IUser extends Document {
   password: string;
   role: 'admin' | 'user';
   householdId?: string;
+  personalBudget?: {
+    monthlyLimit: number;
+    currency: string;
+    resetDate: Date;
+  };
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -16,6 +21,15 @@ export interface IHousehold extends Document {
   name: string;
   members: string[];
   createdBy: string;
+  budget?: {
+    monthlyLimit: number;
+    currency: string;
+    contributions: Array<{
+      userId: string;
+      amount: number;
+      date: Date;
+    }>;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,6 +41,14 @@ export interface IExpense extends Document {
   date: Date;
   ownerId: string;
   householdId?: string;
+  currency: string;
+  attachments?: Array<{
+    filename: string;
+    originalName: string;
+    mimetype: string;
+    size: number;
+    url: string;
+  }>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,6 +59,7 @@ export interface AuthRequest extends Request {
     email: string;
     role: 'admin' | 'user';
   };
+  files?: { [fieldname: string]: any[] } | any[] | undefined;
 }
 
 export interface JWTPayload {

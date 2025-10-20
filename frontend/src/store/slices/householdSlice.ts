@@ -81,6 +81,66 @@ export const deleteHousehold = createAsyncThunk(
   }
 );
 
+export const addMember = createAsyncThunk(
+  'households/addMember',
+  async ({ id, email }: { id: string; email: string }, { rejectWithValue }) => {
+    try {
+      const response = await householdAPI.addMember(id, email);
+      return response.data.household;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to add member');
+    }
+  }
+);
+
+export const removeMember = createAsyncThunk(
+  'households/removeMember',
+  async ({ id, memberId }: { id: string; memberId: string }, { rejectWithValue }) => {
+    try {
+      const response = await householdAPI.removeMember(id, memberId);
+      return response.data.household;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to remove member');
+    }
+  }
+);
+
+export const addContribution = createAsyncThunk(
+  'households/addContribution',
+  async ({ id, amount }: { id: string; amount: number }, { rejectWithValue }) => {
+    try {
+      const response = await householdAPI.addContribution(id, amount);
+      return response.data.household;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to add contribution');
+    }
+  }
+);
+
+export const getContributionStats = createAsyncThunk(
+  'households/getContributionStats',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = await householdAPI.getContributionStats(id);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to get contribution stats');
+    }
+  }
+);
+
+export const updateHouseholdBudget = createAsyncThunk(
+  'households/updateBudget',
+  async ({ id, data }: { id: string; data: { monthlyLimit?: number; currency?: string } }, { rejectWithValue }) => {
+    try {
+      const response = await householdAPI.updateBudget(id, data);
+      return response.data.household;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update budget');
+    }
+  }
+);
+
 const householdSlice = createSlice({
   name: 'households',
   initialState,
@@ -144,6 +204,54 @@ const householdSlice = createSlice({
         state.households = state.households.filter((h) => h._id !== action.payload);
         if (state.currentHousehold?._id === action.payload) {
           state.currentHousehold = null;
+        }
+      });
+
+    // Add member
+    builder
+      .addCase(addMember.fulfilled, (state, action: PayloadAction<Household>) => {
+        const index = state.households.findIndex((h) => h._id === action.payload._id);
+        if (index !== -1) {
+          state.households[index] = action.payload;
+        }
+        if (state.currentHousehold?._id === action.payload._id) {
+          state.currentHousehold = action.payload;
+        }
+      });
+
+    // Remove member
+    builder
+      .addCase(removeMember.fulfilled, (state, action: PayloadAction<Household>) => {
+        const index = state.households.findIndex((h) => h._id === action.payload._id);
+        if (index !== -1) {
+          state.households[index] = action.payload;
+        }
+        if (state.currentHousehold?._id === action.payload._id) {
+          state.currentHousehold = action.payload;
+        }
+      });
+
+    // Add contribution
+    builder
+      .addCase(addContribution.fulfilled, (state, action: PayloadAction<Household>) => {
+        const index = state.households.findIndex((h) => h._id === action.payload._id);
+        if (index !== -1) {
+          state.households[index] = action.payload;
+        }
+        if (state.currentHousehold?._id === action.payload._id) {
+          state.currentHousehold = action.payload;
+        }
+      });
+
+    // Update household budget
+    builder
+      .addCase(updateHouseholdBudget.fulfilled, (state, action: PayloadAction<Household>) => {
+        const index = state.households.findIndex((h) => h._id === action.payload._id);
+        if (index !== -1) {
+          state.households[index] = action.payload;
+        }
+        if (state.currentHousehold?._id === action.payload._id) {
+          state.currentHousehold = action.payload;
         }
       });
   },

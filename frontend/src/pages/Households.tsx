@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { RootState, AppDispatch } from '../store';
 import { fetchHouseholds, createHousehold, deleteHousehold, leaveHousehold } from '../store/slices/householdSlice';
 import Layout from '../components/Layout';
@@ -7,6 +8,7 @@ import Modal from '../components/Modal';
 
 const Households = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const { households, loading } = useSelector((state: RootState) => state.households);
   const { user } = useSelector((state: RootState) => state.auth);
 
@@ -104,17 +106,23 @@ const Households = () => {
                   </div>
 
                   <div className="flex gap-2 pt-4 border-t">
+                    <button
+                      onClick={() => navigate(`/households/${household._id}`)}
+                      className="btn btn-primary flex-1 text-sm"
+                    >
+                      View Details
+                    </button>
                     {isCreator || user?.role === 'admin' ? (
                       <button
                         onClick={() => handleDeleteHousehold(household._id, household.createdBy._id || household.createdBy.id)}
-                        className="btn btn-danger flex-1 text-sm"
+                        className="btn btn-danger text-sm"
                       >
                         Delete
                       </button>
                     ) : (
                       <button
                         onClick={() => handleLeaveHousehold(household._id, household.createdBy._id || household.createdBy.id)}
-                        className="btn btn-secondary flex-1 text-sm"
+                        className="btn btn-secondary text-sm"
                       >
                         Leave
                       </button>

@@ -89,6 +89,7 @@ const expenseSlice = createSlice({
       .addCase(createExpense.fulfilled, (state, action: PayloadAction<Expense>) => {
         state.loading = false;
         state.expenses.unshift(action.payload);
+        state.error = null;
       })
       .addCase(createExpense.rejected, (state, action) => {
         state.loading = false;

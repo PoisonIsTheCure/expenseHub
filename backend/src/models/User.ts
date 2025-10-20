@@ -32,6 +32,21 @@ const userSchema = new Schema<IUser>(
       type: String,
       ref: 'Household',
     },
+    personalBudget: {
+      monthlyLimit: {
+        type: Number,
+        min: [0, 'Monthly limit must be positive'],
+      },
+      currency: {
+        type: String,
+        default: 'EUR',
+        enum: ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY'],
+      },
+      resetDate: {
+        type: Date,
+        default: () => new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1),
+      },
+    },
   },
   {
     timestamps: true,
