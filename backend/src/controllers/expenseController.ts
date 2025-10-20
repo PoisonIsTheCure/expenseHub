@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { Expense } from '../models/Expense';
 import { Household } from '../models/Household';
 import { AuthRequest } from '../types';
+import { calculateSplitDetails } from '../utils/splitCalculations';
 
 export const getAllExpenses = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -49,10 +50,10 @@ export const getAllExpenses = async (req: AuthRequest, res: Response): Promise<v
 
 export const createExpense = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { amount, description, category, date, householdId, currency } = req.body;
+    const { amount, description, category, date, householdId, currency, splitMethod, splitDetails, paidBy } = req.body;
     const userId = req.user?.id;
 
-    console.log('Creating expense:', { amount, description, category, date, householdId, currency, userId });
+    console.log('Creating expense:', { amount, description, category, date, householdId, currency, splitMethod, userId });
 
     // Validate required fields
     if (!amount || !description || !category) {
@@ -68,8 +69,9 @@ export const createExpense = async (req: AuthRequest, res: Response): Promise<vo
     }
 
     // Validate household membership if householdId provided
+    let household = null;
     if (householdId) {
-      const household = await Household.findById(householdId);
+      household = await Household.findById(householdId);
       if (!household) {
         console.log('Household not found:', householdId);
         res.status(404).json({ message: 'Household not found' });
@@ -82,6 +84,22 @@ export const createExpense = async (req: AuthRequest, res: Response): Promise<vo
       }
     }
 
+    // Calculate split details if it's a household expense
+    let calculatedSplitDetails = splitDetails || [];
+    const expenseSplitMethod = splitMethod || (householdId ? 'equal' : 'none');
+    
+    if (householdId && household && expenseSplitMethod !== 'none') {
+      calculatedSplitDetails = calculateSplitDetails(
+        {
+          amount: parseFloat(amount),
+          splitMethod: expenseSplitMethod,
+          splitDetails: splitDetails || [],
+          paidBy: paidBy || userId,
+        },
+        household
+      );
+    }
+
     const expenseData = {
       amount: parseFloat(amount),
       description: description.trim(),
@@ -90,6 +108,9 @@ export const createExpense = async (req: AuthRequest, res: Response): Promise<vo
       ownerId: userId,
       householdId: householdId || undefined,
       currency: currency || 'EUR',
+      paidBy: paidBy || userId,
+      splitMethod: expenseSplitMethod,
+      splitDetails: calculatedSplitDetails,
       attachments: req.files ? (req.files as any[]).map((file: any) => ({
         filename: file.filename,
         originalName: file.originalname,
@@ -106,7 +127,8 @@ export const createExpense = async (req: AuthRequest, res: Response): Promise<vo
 
     const populatedExpense = await Expense.findById(expense._id)
       .populate('ownerId', 'name email')
-      .populate('householdId', 'name');
+      .populate('householdId', 'name')
+      .populate('paidBy', 'name email');
 
     console.log('Expense populated successfully:', populatedExpense);
 
@@ -159,7 +181,7 @@ export const getExpenseById = async (req: AuthRequest, res: Response): Promise<v
 export const updateExpense = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user?.id;
-    const { amount, description, category, date, householdId, currency } = req.body;
+    const { amount, description, category, date, householdId, currency, splitMethod, splitDetails, paidBy } = req.body;
 
     const expense = await Expense.findById(req.params.id);
     if (!expense) {
@@ -174,8 +196,9 @@ export const updateExpense = async (req: AuthRequest, res: Response): Promise<vo
     }
 
     // Validate household membership if householdId provided
+    let household = null;
     if (householdId) {
-      const household = await Household.findById(householdId);
+      household = await Household.findById(householdId);
       if (!household) {
         res.status(404).json({ message: 'Household not found' });
         return;
@@ -192,6 +215,26 @@ export const updateExpense = async (req: AuthRequest, res: Response): Promise<vo
     if (date) expense.date = new Date(date);
     if (householdId !== undefined) expense.householdId = householdId || undefined;
     if (currency) expense.currency = currency;
+    if (paidBy) expense.paidBy = paidBy;
+    if (splitMethod) expense.splitMethod = splitMethod;
+
+    // Recalculate split details if split method or amount changed
+    if ((splitMethod || amount) && expense.householdId) {
+      const targetHousehold = household || await Household.findById(expense.householdId);
+      if (targetHousehold && expense.splitMethod !== 'none') {
+        expense.splitDetails = calculateSplitDetails(
+          {
+            amount: expense.amount,
+            splitMethod: expense.splitMethod,
+            splitDetails: splitDetails || expense.splitDetails,
+            paidBy: expense.paidBy,
+          },
+          targetHousehold
+        );
+      }
+    } else if (splitDetails) {
+      expense.splitDetails = splitDetails;
+    }
 
     // Handle file uploads if any
     if (req.files && (req.files as any[]).length > 0) {
@@ -209,7 +252,8 @@ export const updateExpense = async (req: AuthRequest, res: Response): Promise<vo
 
     const populatedExpense = await Expense.findById(expense._id)
       .populate('ownerId', 'name email')
-      .populate('householdId', 'name');
+      .populate('householdId', 'name')
+      .populate('paidBy', 'name email');
 
     res.json({
       message: 'Expense updated successfully',

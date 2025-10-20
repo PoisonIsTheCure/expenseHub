@@ -14,11 +14,48 @@ const householdSchema = new Schema<IHousehold>(
         ref: 'User',
       },
     ],
+    memberRoles: [
+      {
+        userId: {
+          type: String,
+          ref: 'User',
+          required: true,
+        },
+        role: {
+          type: String,
+          enum: ['owner', 'admin', 'member', 'viewer'],
+          default: 'member',
+        },
+      },
+    ],
     createdBy: {
       type: String,
       ref: 'User',
       required: true,
     },
+    defaultSplitMethod: {
+      type: String,
+      enum: ['equal', 'percentage', 'custom', 'none'],
+      default: 'equal',
+    },
+    memberWeights: [
+      {
+        userId: {
+          type: String,
+          ref: 'User',
+        },
+        weight: {
+          type: Number,
+          default: 1,
+          min: 0,
+        },
+        percentage: {
+          type: Number,
+          min: 0,
+          max: 100,
+        },
+      },
+    ],
     budget: {
       monthlyLimit: {
         type: Number,

@@ -109,3 +109,44 @@ export const budgetAPI = {
     api.post(`/budgets/household/${householdId}/contribution`, { amount }),
 };
 
+// Settlement API
+export const settlementAPI = {
+  getBalances: (householdId: string) => 
+    api.get(`/settlements/households/${householdId}/balances`),
+  getHouseholdSettlements: (householdId: string) => 
+    api.get(`/settlements/households/${householdId}`),
+  getUserSettlements: () => api.get('/settlements/user'),
+  create: (data: any) => {
+    if (data instanceof FormData) {
+      return api.post('/settlements', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+    }
+    return api.post('/settlements', data);
+  },
+  updateStatus: (id: string, status: string) => 
+    api.patch(`/settlements/${id}/status`, { status }),
+};
+
+// Recurring Expense API
+export const recurringExpenseAPI = {
+  getAll: () => api.get('/recurring-expenses'),
+  getById: (id: string) => api.get(`/recurring-expenses/${id}`),
+  create: (data: any) => api.post('/recurring-expenses', data),
+  update: (id: string, data: any) => api.put(`/recurring-expenses/${id}`, data),
+  delete: (id: string) => api.delete(`/recurring-expenses/${id}`),
+  process: () => api.post('/recurring-expenses/process'),
+};
+
+// Analytics API
+export const analyticsAPI = {
+  getPersonal: (params?: { startDate?: string; endDate?: string }) => 
+    api.get('/analytics/personal', { params }),
+  getHousehold: (householdId: string, params?: { startDate?: string; endDate?: string }) => 
+    api.get(`/analytics/household/${householdId}`, { params }),
+  compareMonths: (householdId?: string) => 
+    api.get('/analytics/compare-months', { params: { householdId } }),
+  getCategoryTrends: (params?: { householdId?: string; months?: number }) => 
+    api.get('/analytics/trends', { params }),
+};
+

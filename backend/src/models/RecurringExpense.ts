@@ -1,7 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
-import { IExpense } from '../types';
+import { IRecurringExpense } from '../types';
 
-const expenseSchema = new Schema<IExpense>(
+const recurringExpenseSchema = new Schema<IRecurringExpense>(
   {
     amount: {
       type: Number,
@@ -30,10 +30,22 @@ const expenseSchema = new Schema<IExpense>(
       ],
       default: 'Other',
     },
-    date: {
+    frequency: {
+      type: String,
+      required: [true, 'Frequency is required'],
+      enum: ['daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'yearly'],
+    },
+    startDate: {
       type: Date,
-      required: [true, 'Date is required'],
+      required: [true, 'Start date is required'],
       default: Date.now,
+    },
+    endDate: {
+      type: Date,
+    },
+    nextOccurrence: {
+      type: Date,
+      required: [true, 'Next occurrence is required'],
     },
     ownerId: {
       type: String,
@@ -49,9 +61,9 @@ const expenseSchema = new Schema<IExpense>(
       default: 'EUR',
       enum: ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY'],
     },
-    paidBy: {
-      type: String,
-      ref: 'User',
+    isActive: {
+      type: Boolean,
+      default: true,
     },
     splitMethod: {
       type: String,
@@ -64,38 +76,19 @@ const expenseSchema = new Schema<IExpense>(
           type: String,
           ref: 'User',
         },
-        amount: {
-          type: Number,
-        },
-        percentage: {
-          type: Number,
-        },
+        amount: Number,
+        percentage: Number,
       },
     ],
-    attachments: [
-      {
-        filename: {
-          type: String,
-          required: true,
-        },
-        originalName: {
-          type: String,
-          required: true,
-        },
-        mimetype: {
-          type: String,
-          required: true,
-        },
-        size: {
-          type: Number,
-          required: true,
-        },
-        url: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
+    paidBy: {
+      type: String,
+      ref: 'User',
+    },
+    reminderDays: {
+      type: Number,
+      default: 3,
+      min: 0,
+    },
   },
   {
     timestamps: true,
@@ -103,8 +96,12 @@ const expenseSchema = new Schema<IExpense>(
 );
 
 // Index for better query performance
-expenseSchema.index({ ownerId: 1, date: -1 });
-expenseSchema.index({ householdId: 1, date: -1 });
+recurringExpenseSchema.index({ ownerId: 1, isActive: 1 });
+recurringExpenseSchema.index({ householdId: 1, isActive: 1 });
+recurringExpenseSchema.index({ nextOccurrence: 1, isActive: 1 });
 
-export const Expense = mongoose.model<IExpense>('Expense', expenseSchema);
+export const RecurringExpense = mongoose.model<IRecurringExpense>(
+  'RecurringExpense',
+  recurringExpenseSchema
+);
 

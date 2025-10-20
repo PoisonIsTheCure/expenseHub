@@ -13,6 +13,8 @@ import {
 import Layout from '../components/Layout';
 import Modal from '../components/Modal';
 import LoadingSpinner from '../components/LoadingSpinner';
+import BalancesView from '../components/BalancesView';
+import SettlementForm from '../components/SettlementForm';
 import { useToast } from '../contexts/ToastContext';
 import { CURRENCIES } from '../types';
 
@@ -47,9 +49,11 @@ const HouseholdDetail = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const { showToast } = useToast();
 
+  const [activeTab, setActiveTab] = useState<'overview' | 'balances'>('overview');
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [isAddContributionModalOpen, setIsAddContributionModalOpen] = useState(false);
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
+  const [isSettlementModalOpen, setIsSettlementModalOpen] = useState(false);
   const [memberEmail, setMemberEmail] = useState('');
   const [contributionAmount, setContributionAmount] = useState('');
   const [budgetLimit, setBudgetLimit] = useState('');
@@ -206,7 +210,34 @@ const HouseholdDetail = () => {
           </div>
         )}
 
-        {/* Members Section */}
+        {/* Tab Navigation */}
+        <div className="flex gap-4 border-b border-gray-200">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+              activeTab === 'overview'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('balances')}
+            className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+              activeTab === 'balances'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Balances & Settlements
+          </button>
+        </div>
+
+        {/* Overview Tab */}
+        {activeTab === 'overview' && (
+          <>
+            {/* Members Section */}
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-semibold text-gray-900">
@@ -340,6 +371,43 @@ const HouseholdDetail = () => {
             </div>
           )}
         </div>
+          </>
+        )}
+
+        {/* Balances & Settlements Tab */}
+        {activeTab === 'balances' && id && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-semibold text-gray-900">Balances & Settlements</h2>
+              <button
+                onClick={() => setIsSettlementModalOpen(true)}
+                className="btn btn-primary"
+              >
+                Record Settlement
+              </button>
+            </div>
+            <BalancesView householdId={id} />
+          </div>
+        )}
+
+        {/* Settlement Modal */}
+        <Modal
+          isOpen={isSettlementModalOpen}
+          onClose={() => setIsSettlementModalOpen(false)}
+          title="Record Settlement"
+        >
+          {id && (
+            <SettlementForm
+              householdId={id}
+              members={currentHousehold.members}
+              onSuccess={() => {
+                showToast('Settlement recorded successfully', 'success');
+                setIsSettlementModalOpen(false);
+              }}
+              onCancel={() => setIsSettlementModalOpen(false)}
+            />
+          )}
+        </Modal>
 
         {/* Add Member Modal */}
         <Modal

@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import path from 'path';
 import { connectDatabase } from './config/database';
 import { createDefaultAdmin } from './utils/createAdmin';
+import { startRecurringExpenseScheduler } from './utils/scheduler';
 
 // Import routes
 import authRoutes from './routes/authRoutes';
@@ -13,6 +14,9 @@ import userRoutes from './routes/userRoutes';
 import householdRoutes from './routes/householdRoutes';
 import expenseRoutes from './routes/expenseRoutes';
 import budgetRoutes from './routes/budgetRoutes';
+import settlementRoutes from './routes/settlementRoutes';
+import recurringExpenseRoutes from './routes/recurringExpenseRoutes';
+import analyticsRoutes from './routes/analyticsRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -47,6 +51,9 @@ app.use('/api/users', userRoutes);
 app.use('/api/households', householdRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/budgets', budgetRoutes);
+app.use('/api/settlements', settlementRoutes);
+app.use('/api/recurring-expenses', recurringExpenseRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {
@@ -70,6 +77,9 @@ const startServer = async () => {
 
     // Create default admin
     await createDefaultAdmin();
+
+    // Start recurring expense scheduler
+    startRecurringExpenseScheduler();
 
     // Start server
     app.listen(PORT, () => {
