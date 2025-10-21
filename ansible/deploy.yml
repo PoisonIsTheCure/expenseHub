@@ -119,7 +119,7 @@
 
     - name: Check application health
       uri:
-        url: "http://localhost/api/health"
+        url: "http://localhost/health"
         status_code: 200
       register: health_check
       retries: 5
