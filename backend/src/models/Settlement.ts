@@ -26,7 +26,7 @@ const settlementSchema = new Schema<ISettlement>(
     currency: {
       type: String,
       default: 'EUR',
-      enum: ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY'],
+      enum: ['EUR'],
     },
     status: {
       type: String,

@@ -64,7 +64,7 @@ const householdSchema = new Schema<IHousehold>(
       currency: {
         type: String,
         default: 'EUR',
-        enum: ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY'],
+        enum: ['EUR'],
       },
       contributions: [
         {
@@ -81,6 +81,11 @@ const householdSchema = new Schema<IHousehold>(
           date: {
             type: Date,
             default: Date.now,
+          },
+          comment: {
+            type: String,
+            trim: true,
+            maxlength: [500, 'Comment cannot exceed 500 characters'],
           },
         },
       ],

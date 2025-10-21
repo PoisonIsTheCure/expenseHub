@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { EXPENSE_CATEGORIES, Expense, CURRENCIES } from '../types';
+import { EXPENSE_CATEGORIES, Expense } from '../types';
+import { DEFAULT_CURRENCY } from '../config/currency';
 
 interface ExpenseFormProps {
   onSubmit: (data: any) => void;
@@ -15,7 +16,7 @@ const ExpenseForm = ({ onSubmit, onCancel, initialData, households = [] }: Expen
     category: initialData?.category || 'Other',
     date: initialData?.date ? new Date(initialData.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
     householdId: initialData?.householdId?._id || initialData?.householdId || '',
-    currency: initialData?.currency || 'EUR',
+    currency: initialData?.currency || DEFAULT_CURRENCY,
   });
 
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
@@ -68,20 +69,7 @@ const ExpenseForm = ({ onSubmit, onCancel, initialData, households = [] }: Expen
             placeholder="0.00"
           />
         </div>
-        <div>
-          <label className="label">Currency</label>
-          <select
-            value={formData.currency}
-            onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-            className="input w-full"
-          >
-            {CURRENCIES.map((currency) => (
-              <option key={currency.code} value={currency.code}>
-                {currency.symbol} {currency.code}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Currency is now fixed to EUR - no selection needed */}
       </div>
 
       <div>

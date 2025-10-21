@@ -41,17 +41,8 @@ const BalancesView = ({ householdId }: BalancesViewProps) => {
   const { balances: memberBalances, debts, currency } = balances;
   
   const getCurrencySymbol = (code: string) => {
-    const symbols: { [key: string]: string } = {
-      EUR: '€',
-      USD: '$',
-      GBP: '£',
-      JPY: '¥',
-      CAD: 'C$',
-      AUD: 'A$',
-      CHF: 'CHF',
-      CNY: '¥',
-    };
-    return symbols[code] || code;
+    // Currency is now always EUR
+    return '€';
   };
 
   const symbol = getCurrencySymbol(currency);

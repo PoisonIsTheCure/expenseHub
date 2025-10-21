@@ -43,6 +43,9 @@ dev: ## Start development environment
 dev-down: ## Stop development environment
 	docker compose -f docker-compose.dev.yml down
 
+dev-build: ## Build development environment
+	docker compose -f docker-compose.dev.yml build
+
 prod: ## Start production environment
 	docker compose up --build -d
 

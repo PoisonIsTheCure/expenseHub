@@ -16,7 +16,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import BalancesView from '../components/BalancesView';
 import SettlementForm from '../components/SettlementForm';
 import { useToast } from '../contexts/ToastContext';
-import { CURRENCIES } from '../types';
+import { DEFAULT_CURRENCY } from '../config/currency';
 
 interface ContributionStats {
   household: {
@@ -57,7 +57,7 @@ const HouseholdDetail = () => {
   const [memberEmail, setMemberEmail] = useState('');
   const [contributionAmount, setContributionAmount] = useState('');
   const [budgetLimit, setBudgetLimit] = useState('');
-  const [budgetCurrency, setBudgetCurrency] = useState('EUR');
+  const [budgetCurrency, setBudgetCurrency] = useState(DEFAULT_CURRENCY);
   const [contributionStats, setContributionStats] = useState<ContributionStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(false);
 
@@ -136,7 +136,7 @@ const HouseholdDetail = () => {
     try {
       const data: { monthlyLimit?: number; currency?: string } = {};
       if (budgetLimit) data.monthlyLimit = parseFloat(budgetLimit);
-      if (budgetCurrency) data.currency = budgetCurrency;
+      data.currency = DEFAULT_CURRENCY; // Always EUR
 
       await dispatch(updateHouseholdBudget({ id, data })).unwrap();
       showToast('Budget updated successfully', 'success');
@@ -169,8 +169,8 @@ const HouseholdDetail = () => {
 
   const isCreator = currentHousehold.createdBy._id === user?.id || currentHousehold.createdBy.id === user?.id;
   const getCurrencySymbol = (code: string) => {
-    const currency = CURRENCIES.find((c) => c.code === code);
-    return currency?.symbol || code;
+    // Currency is now always EUR
+    return '€';
   };
 
   return (
@@ -514,20 +514,7 @@ const HouseholdDetail = () => {
                 placeholder="1000.00"
               />
             </div>
-            <div>
-              <label className="label">Currency</label>
-              <select
-                value={budgetCurrency}
-                onChange={(e) => setBudgetCurrency(e.target.value)}
-                className="input"
-              >
-                {CURRENCIES.map((currency) => (
-                  <option key={currency.code} value={currency.code}>
-                    {currency.symbol} - {currency.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Currency is now fixed to EUR - no selection needed */}
             <div className="flex gap-3 pt-4">
               <button type="submit" className="btn btn-primary flex-1">
                 Update Budget

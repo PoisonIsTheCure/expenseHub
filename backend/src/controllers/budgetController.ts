@@ -261,7 +261,7 @@ export const addHouseholdContribution = async (req: AuthRequest, res: Response):
   try {
     const userId = req.user?.id;
     const { householdId } = req.params;
-    const { amount } = req.body;
+    const { amount, comment } = req.body;
 
     if (!amount || amount <= 0) {
       res.status(400).json({ message: 'Contribution amount must be positive' });
@@ -283,6 +283,7 @@ export const addHouseholdContribution = async (req: AuthRequest, res: Response):
       userId,
       amount: parseFloat(amount),
       date: new Date(),
+      comment: comment?.trim() || undefined,
     };
 
     const updatedHousehold = await Household.findByIdAndUpdate(

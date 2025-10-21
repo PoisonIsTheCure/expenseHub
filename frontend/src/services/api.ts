@@ -105,8 +105,8 @@ export const budgetAPI = {
   getHousehold: (householdId: string) => api.get(`/budgets/household/${householdId}`),
   updateHousehold: (householdId: string, data: any) => 
     api.put(`/budgets/household/${householdId}`, data),
-  addHouseholdContribution: (householdId: string, amount: number) =>
-    api.post(`/budgets/household/${householdId}/contribution`, { amount }),
+  addHouseholdContribution: (householdId: string, amount: number, comment?: string) =>
+    api.post(`/budgets/household/${householdId}/contribution`, { amount, comment }),
 };
 
 // Settlement API
@@ -148,5 +148,34 @@ export const analyticsAPI = {
     api.get('/analytics/compare-months', { params: { householdId } }),
   getCategoryTrends: (params?: { householdId?: string; months?: number }) => 
     api.get('/analytics/trends', { params }),
+};
+
+// Export API
+export const exportAPI = {
+  exportExpensesCSV: (params?: { householdId?: string; startDate?: string; endDate?: string }) => {
+    const queryParams = new URLSearchParams();
+    if (params?.householdId) queryParams.append('householdId', params.householdId);
+    if (params?.startDate) queryParams.append('startDate', params.startDate);
+    if (params?.endDate) queryParams.append('endDate', params.endDate);
+    
+    return api.get(`/export/expenses/csv?${queryParams.toString()}`, {
+      responseType: 'blob',
+    });
+  },
+  exportExpensesPDF: (params?: { householdId?: string; startDate?: string; endDate?: string }) => {
+    const queryParams = new URLSearchParams();
+    if (params?.householdId) queryParams.append('householdId', params.householdId);
+    if (params?.startDate) queryParams.append('startDate', params.startDate);
+    if (params?.endDate) queryParams.append('endDate', params.endDate);
+    
+    return api.get(`/export/expenses/pdf?${queryParams.toString()}`, {
+      responseType: 'blob',
+    });
+  },
+  exportHouseholdBudgetPDF: (householdId: string) => {
+    return api.get(`/export/household/${householdId}/budget/pdf`, {
+      responseType: 'blob',
+    });
+  },
 };
 

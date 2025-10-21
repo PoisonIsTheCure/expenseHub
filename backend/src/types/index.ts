@@ -38,6 +38,7 @@ export interface IHousehold extends Document {
       userId: string;
       amount: number;
       date: Date;
+      comment?: string;
     }>;
   };
   createdAt: Date;

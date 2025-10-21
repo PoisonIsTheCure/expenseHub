@@ -47,7 +47,7 @@ const expenseSchema = new Schema<IExpense>(
     currency: {
       type: String,
       default: 'EUR',
-      enum: ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY'],
+      enum: ['EUR'],
     },
     paidBy: {
       type: String,

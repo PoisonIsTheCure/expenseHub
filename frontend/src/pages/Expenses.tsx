@@ -10,6 +10,7 @@ import ExpenseForm from '../components/ExpenseForm';
 import Modal from '../components/Modal';
 import LoadingSpinner from '../components/LoadingSpinner';
 import EmptyState from '../components/EmptyState';
+import ExportButton from '../components/ExportButton';
 import { Expense } from '../types';
 
 const Expenses = () => {
@@ -122,9 +123,16 @@ const Expenses = () => {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Expenses</h1>
-          <button onClick={() => setIsModalOpen(true)} className="btn btn-primary w-full sm:w-auto">
-            Add Expense
-          </button>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <ExportButton 
+              type="expenses" 
+              householdId={filter === 'household' ? households[0]?._id : undefined}
+              className="flex-1 sm:flex-none"
+            />
+            <button onClick={() => setIsModalOpen(true)} className="btn btn-primary flex-1 sm:flex-none">
+              Add Expense
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -153,7 +161,7 @@ const Expenses = () => {
           <div className="mt-4 p-3 bg-primary-50 rounded-lg">
             <p className="text-sm text-gray-700">
               <span className="font-semibold">{filteredExpenses.length}</span> expenses totaling{' '}
-              <span className="font-semibold text-primary-700">${totalAmount.toFixed(2)}</span>
+              <span className="font-semibold text-primary-700">€{totalAmount.toFixed(2)}</span>
             </p>
           </div>
         </div>

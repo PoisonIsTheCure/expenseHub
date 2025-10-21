@@ -64,9 +64,9 @@ export const updateHouseholdBudget = createAsyncThunk(
 // Add household contribution
 export const addHouseholdContribution = createAsyncThunk(
   'budget/addHouseholdContribution',
-  async ({ householdId, amount }: { householdId: string; amount: number }, { rejectWithValue }) => {
+  async ({ householdId, amount, comment }: { householdId: string; amount: number; comment?: string }, { rejectWithValue }) => {
     try {
-      const response = await budgetAPI.addHouseholdContribution(householdId, amount);
+      const response = await budgetAPI.addHouseholdContribution(householdId, amount, comment);
       return { householdId, contribution: response.data.contribution, budget: response.data.budget };
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to add contribution');

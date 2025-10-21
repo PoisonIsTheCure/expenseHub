@@ -52,18 +52,21 @@ const Toast = ({ message, type, duration = 5000, onClose }: ToastProps) => {
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 max-w-sm w-full transform transition-all duration-300 ${
-        isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+      className={`fixed top-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-sm z-50 transform transition-all duration-300 ${
+        isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
       }`}
     >
-      <div className={`${getTypeStyles()} rounded-lg shadow-lg p-4 flex items-center gap-3`}>
-        <span className="text-lg font-bold">{getIcon()}</span>
-        <span className="flex-1 text-sm font-medium">{message}</span>
+      <div className={`${getTypeStyles()} rounded-lg shadow-lg p-4 flex items-start gap-3`}>
+        <span className="text-lg font-bold flex-shrink-0 mt-0.5">{getIcon()}</span>
+        <span className="flex-1 text-sm font-medium leading-relaxed">{message}</span>
         <button
           onClick={handleClose}
-          className="text-white hover:text-gray-200 transition-colors"
+          className="text-white hover:text-gray-200 transition-colors flex-shrink-0 p-1 -m-1"
+          aria-label="Close notification"
         >
-          ✕
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
     </div>

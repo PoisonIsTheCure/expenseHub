@@ -26,7 +26,7 @@ router.put(
       .withMessage('Monthly limit must be a positive number'),
     body('currency')
       .optional()
-      .isIn(['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY'])
+      .isIn(['EUR'])
       .withMessage('Invalid currency'),
   ]),
   updatePersonalBudget
@@ -43,7 +43,7 @@ router.put(
       .withMessage('Monthly limit must be a positive number'),
     body('currency')
       .optional()
-      .isIn(['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY'])
+      .isIn(['EUR'])
       .withMessage('Invalid currency'),
   ]),
   updateHouseholdBudget

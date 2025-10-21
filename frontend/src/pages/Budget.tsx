@@ -8,7 +8,8 @@ import Layout from '../components/Layout';
 import Modal from '../components/Modal';
 import LoadingSpinner from '../components/LoadingSpinner';
 import EmptyState from '../components/EmptyState';
-import { CURRENCIES } from '../types';
+import ExportButton from '../components/ExportButton';
+import { DEFAULT_CURRENCY } from '../config/currency';
 
 const Budget = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -22,8 +23,9 @@ const Budget = () => {
   const [selectedHousehold, setSelectedHousehold] = useState<string>('');
   const [formData, setFormData] = useState({
     monthlyLimit: '',
-    currency: 'EUR',
+    currency: DEFAULT_CURRENCY,
     contributionAmount: '',
+    contributionComment: '',
   });
 
   useEffect(() => {
@@ -48,7 +50,7 @@ const Budget = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setFormData({ monthlyLimit: '', currency: 'EUR', contributionAmount: '' });
+    setFormData({ monthlyLimit: '', currency: 'EUR', contributionAmount: '', contributionComment: '' });
     setSelectedHousehold('');
   };
 
@@ -87,6 +89,7 @@ const Budget = () => {
         const result = await dispatch(addHouseholdContribution({
           householdId: selectedHousehold,
           amount: parseFloat(formData.contributionAmount),
+          comment: formData.contributionComment,
         }));
         
         if (addHouseholdContribution.fulfilled.match(result)) {
@@ -102,8 +105,8 @@ const Budget = () => {
   };
 
   const getCurrencySymbol = (currencyCode: string) => {
-    const currency = CURRENCIES.find(c => c.code === currencyCode);
-    return currency?.symbol || currencyCode;
+    // Currency is now always EUR
+    return '€';
   };
 
   const getProgressColor = (percentage: number) => {
@@ -243,7 +246,7 @@ const Budget = () => {
                     <div key={household._id} className="card">
                       <div className="flex justify-between items-start mb-4">
                         <h3 className="text-lg font-semibold">{household.name}</h3>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                           <button
                             onClick={() => handleOpenModal('household', household._id)}
                             className="btn btn-secondary btn-sm"
@@ -251,12 +254,20 @@ const Budget = () => {
                             {budget ? 'Update Budget' : 'Set Budget'}
                           </button>
                           {budget && (
-                            <button
-                              onClick={() => handleOpenModal('contribution', household._id)}
-                              className="btn btn-primary btn-sm"
-                            >
-                              Add Contribution
-                            </button>
+                            <>
+                              <button
+                                onClick={() => handleOpenModal('contribution', household._id)}
+                                className="btn btn-primary btn-sm"
+                              >
+                                Add Contribution
+                              </button>
+                              <ExportButton
+                                type="household-budget"
+                                householdId={household._id}
+                                householdName={household.name}
+                                className="btn-sm"
+                              />
+                            </>
                           )}
                         </div>
                       </div>
@@ -351,37 +362,40 @@ const Budget = () => {
                     placeholder="0.00"
                   />
                 </div>
-                <div>
-                  <label className="label">Currency</label>
-                  <select
-                    value={formData.currency}
-                    onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                    className="input"
-                  >
-                    {CURRENCIES.map((currency) => (
-                      <option key={currency.code} value={currency.code}>
-                        {currency.symbol} {currency.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {/* Currency is now fixed to EUR - no selection needed */}
               </>
             )}
 
             {modalType === 'contribution' && (
-              <div>
-                <label className="label">Contribution Amount</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0.01"
-                  required
-                  value={formData.contributionAmount}
-                  onChange={(e) => setFormData({ ...formData, contributionAmount: e.target.value })}
-                  className="input"
-                  placeholder="0.00"
-                />
-              </div>
+              <>
+                <div>
+                  <label className="label">Contribution Amount</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    required
+                    value={formData.contributionAmount}
+                    onChange={(e) => setFormData({ ...formData, contributionAmount: e.target.value })}
+                    className="input"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="label">Comment (Optional)</label>
+                  <textarea
+                    value={formData.contributionComment}
+                    onChange={(e) => setFormData({ ...formData, contributionComment: e.target.value })}
+                    className="input"
+                    placeholder="Add a note about this contribution..."
+                    rows={3}
+                    maxLength={500}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {formData.contributionComment.length}/500 characters
+                  </p>
+                </div>
+              </>
             )}
 
             <div className="flex gap-3 pt-4">

@@ -321,7 +321,7 @@ export const removeMember = async (req: AuthRequest, res: Response): Promise<voi
 
 export const addContribution = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { amount } = req.body;
+    const { amount, comment } = req.body;
     const userId = req.user?.id;
     const household = await Household.findById(req.params.id);
 
@@ -356,6 +356,7 @@ export const addContribution = async (req: AuthRequest, res: Response): Promise<
       userId: userId!,
       amount,
       date: new Date(),
+      comment: comment?.trim() || undefined,
     });
 
     await household.save();
@@ -472,7 +473,7 @@ export const updateHouseholdBudget = async (req: AuthRequest, res: Response): Pr
     }
 
     if (currency) {
-      const validCurrencies = ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY'];
+      const validCurrencies = ['EUR'];
       if (!validCurrencies.includes(currency)) {
         res.status(400).json({ message: 'Invalid currency' });
         return;

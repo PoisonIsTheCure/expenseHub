@@ -40,7 +40,7 @@ const userSchema = new Schema<IUser>(
       currency: {
         type: String,
         default: 'EUR',
-        enum: ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY'],
+        enum: ['EUR'],
       },
       resetDate: {
         type: Date,

@@ -1,63 +1,30 @@
-// Mock exchange rates - in production, you would fetch these from an API like exchangerate.host
-const EXCHANGE_RATES: { [key: string]: number } = {
-  EUR: 1.0,    // Base currency
-  USD: 1.08,   // 1 EUR = 1.08 USD
-  GBP: 0.85,   // 1 EUR = 0.85 GBP
-  JPY: 160.0,  // 1 EUR = 160 JPY
-  CAD: 1.47,   // 1 EUR = 1.47 CAD
-  AUD: 1.65,   // 1 EUR = 1.65 AUD
-  CHF: 0.95,   // 1 EUR = 0.95 CHF
-  CNY: 7.8,    // 1 EUR = 7.8 CNY
-};
+import { CURRENCY_CONFIG, formatCurrency as configFormatCurrency, isValidCurrency as configIsValidCurrency } from '../config/currency';
 
+// Since we only support EUR now, currency conversion is simplified
 export const convertCurrency = (amount: number, fromCurrency: string, toCurrency: string): number => {
-  if (fromCurrency === toCurrency) {
+  // Since we only support EUR, no conversion is needed
+  if (fromCurrency === toCurrency && fromCurrency === CURRENCY_CONFIG.code) {
     return amount;
   }
-
-  // Convert to EUR first
-  const eurAmount = amount / EXCHANGE_RATES[fromCurrency];
   
-  // Convert from EUR to target currency
-  const convertedAmount = eurAmount * EXCHANGE_RATES[toCurrency];
-  
-  return Math.round(convertedAmount * 100) / 100; // Round to 2 decimal places
+  // If either currency is not EUR, return the amount as-is (should not happen in normal operation)
+  return amount;
 };
 
 export const getExchangeRate = (fromCurrency: string, toCurrency: string): number => {
-  if (fromCurrency === toCurrency) {
-    return 1;
-  }
-  
-  return EXCHANGE_RATES[toCurrency] / EXCHANGE_RATES[fromCurrency];
+  // Since we only support EUR, exchange rate is always 1
+  return 1;
 };
 
-export const formatCurrency = (amount: number, currency: string): string => {
-  const symbols: { [key: string]: string } = {
-    EUR: '€',
-    USD: '$',
-    GBP: '£',
-    JPY: '¥',
-    CAD: 'C$',
-    AUD: 'A$',
-    CHF: 'CHF',
-    CNY: '¥',
-  };
-
-  const symbol = symbols[currency] || currency;
-  
-  // For JPY, don't show decimal places
-  if (currency === 'JPY') {
-    return `${symbol}${Math.round(amount).toLocaleString()}`;
-  }
-  
-  return `${symbol}${amount.toFixed(2)}`;
+export const formatCurrency = (amount: number, currency: string = CURRENCY_CONFIG.code): string => {
+  // Use the centralized formatting function
+  return configFormatCurrency(amount);
 };
 
 export const getSupportedCurrencies = (): string[] => {
-  return Object.keys(EXCHANGE_RATES);
+  return [CURRENCY_CONFIG.code];
 };
 
 export const isValidCurrency = (currency: string): boolean => {
-  return currency in EXCHANGE_RATES;
+  return configIsValidCurrency(currency);
 };

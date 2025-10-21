@@ -47,7 +47,7 @@ router.post(
     body('householdId').optional().isMongoId().withMessage('Invalid household ID'),
     body('currency')
       .optional()
-      .isIn(['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY'])
+      .isIn(['EUR'])
       .withMessage('Invalid currency'),
   ]),
   createExpense
