@@ -3,7 +3,7 @@ import { Settlement } from '../models/Settlement';
 import { Household } from '../models/Household';
 import { Expense } from '../models/Expense';
 import { AuthRequest } from '../types';
-import { calculateHouseholdBalances, simplifyDebts } from '../utils/splitCalculations';
+import { calculateHouseholdBalances, simplifyDebts } from '../services/calculationService';
 
 export const getHouseholdBalances = async (req: AuthRequest, res: Response): Promise<void> => {
   try {

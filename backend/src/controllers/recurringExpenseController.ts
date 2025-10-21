@@ -3,7 +3,7 @@ import { RecurringExpense } from '../models/RecurringExpense';
 import { Expense } from '../models/Expense';
 import { Household } from '../models/Household';
 import { AuthRequest } from '../types';
-import { calculateNextOccurrence, calculateSplitDetails } from '../utils/splitCalculations';
+import { calculateNextOccurrence, calculateSplitDetails } from '../services/calculationService';
 
 export const getAllRecurringExpenses = async (req: AuthRequest, res: Response): Promise<void> => {
   try {

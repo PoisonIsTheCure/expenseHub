@@ -20,12 +20,22 @@ const Dashboard = () => {
   }, [dispatch]);
 
   const stats = useMemo(() => {
+    const userId = (JSON.parse(localStorage.getItem('user') || '{}') as any).id;
+
     const personalExpenses = expenses.filter((e) => !e.householdId);
     const householdExpenses = expenses.filter((e) => e.householdId);
-    
-    const personalTotal = personalExpenses.reduce((sum, e) => sum + e.amount, 0);
-    const householdTotal = householdExpenses.reduce((sum, e) => sum + e.amount, 0);
-    
+
+    let personalTotal = personalExpenses.reduce((sum, e) => sum + e.amount, 0);
+    let householdTotal = householdExpenses.reduce((sum, e) => sum + e.amount, 0);
+
+    // Calculate user's share of household expenses
+    householdExpenses.forEach(expense => {
+      const userSplit = expense.splitDetails?.find(s => s.userId === userId);
+      if (userSplit && userSplit.amount) {
+        personalTotal += userSplit.amount;
+      }
+    });
+
     // Category breakdown
     const categoryData: Record<string, number> = {};
     expenses.forEach((expense) => {

@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import { RecurringExpense } from '../models/RecurringExpense';
 import { Expense } from '../models/Expense';
 import { Household } from '../models/Household';
-import { calculateNextOccurrence, calculateSplitDetails } from './splitCalculations';
+import { calculateNextOccurrence, calculateSplitDetails } from '../services/calculationService';
 
 export const startRecurringExpenseScheduler = () => {
   // Run every day at midnight (00:00)

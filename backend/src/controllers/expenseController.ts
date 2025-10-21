@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { Expense } from '../models/Expense';
 import { Household } from '../models/Household';
 import { AuthRequest } from '../types';
-import { calculateSplitDetails } from '../utils/splitCalculations';
+import { calculateSplitDetails } from '../services/calculationService';
 
 // Normalize stored file URLs by stripping any leading "/uploads/" and
 // ensuring a single leading "/" so the frontend can safely prefix with VITE_UPLOADS_URL
