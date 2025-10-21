@@ -6,10 +6,9 @@ import {
   fetchHouseholdAnalytics,
   fetchMonthComparison,
 } from '../store/slices/analyticsSlice';
-import { fetchAllHouseholds } from '../store/slices/householdSlice';
+import { fetchHouseholds } from '../store/slices/householdSlice';
 import Layout from '../components/Layout';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { CURRENCIES } from '../types';
 
 const Analytics = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -21,7 +20,7 @@ const Analytics = () => {
   const [selectedHousehold, setSelectedHousehold] = useState('');
 
   useEffect(() => {
-    dispatch(fetchAllHouseholds());
+    dispatch(fetchHouseholds());
     dispatch(fetchPersonalAnalytics());
     dispatch(fetchMonthComparison());
   }, [dispatch]);
@@ -34,11 +33,6 @@ const Analytics = () => {
       dispatch(fetchMonthComparison());
     }
   }, [dispatch, selectedView, selectedHousehold]);
-
-  const getCurrencySymbol = (code: string) => {
-    const currency = CURRENCIES.find((c) => c.code === code);
-    return currency?.symbol || code;
-  };
 
   const renderPersonalAnalytics = () => {
     if (!personalAnalytics) return null;
