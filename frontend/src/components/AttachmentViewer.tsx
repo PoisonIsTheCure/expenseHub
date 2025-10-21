@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { uploadAPI } from '../services/api';
 
 interface Attachment {
   filename: string;
@@ -17,12 +18,52 @@ interface AttachmentViewerProps {
 
 const AttachmentViewer = ({ attachments, isOpen, onClose, initialIndex = 0 }: AttachmentViewerProps) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [attachmentUrls, setAttachmentUrls] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState<Record<string, boolean>>({});
+
+  // Load attachment URLs when component opens
+  useEffect(() => {
+    if (isOpen && attachments.length > 0) {
+      attachments.forEach(async (attachment) => {
+        const filename = attachment.url.startsWith('/') ? attachment.url.substring(1) : attachment.url;
+        if (!attachmentUrls[filename]) {
+          setLoading(prev => ({ ...prev, [filename]: true }));
+          try {
+            const response = await uploadAPI.getAttachment(filename);
+            const blob = response.data;
+            const url = URL.createObjectURL(blob);
+            setAttachmentUrls(prev => ({ ...prev, [filename]: url }));
+          } catch (error) {
+            console.error('Error loading attachment:', error);
+          } finally {
+            setLoading(prev => ({ ...prev, [filename]: false }));
+          }
+        }
+      });
+    }
+  }, [isOpen, attachments, attachmentUrls]);
+
+  // Cleanup blob URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      Object.values(attachmentUrls).forEach(url => {
+        URL.revokeObjectURL(url);
+      });
+    };
+  }, []);
 
   if (!isOpen || attachments.length === 0) return null;
 
   const currentAttachment = attachments[currentIndex];
   const isImage = currentAttachment.mimetype.startsWith('image/');
   const isPDF = currentAttachment.mimetype === 'application/pdf';
+
+  // Helper function to get the blob URL for display
+  const getFileUrl = (url: string) => {
+    // Extract filename from URL (remove leading slash if present)
+    const filename = url.startsWith('/') ? url.substring(1) : url;
+    return attachmentUrls[filename] || '';
+  };
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -41,12 +82,9 @@ const AttachmentViewer = ({ attachments, isOpen, onClose, initialIndex = 0 }: At
   };
 
   const downloadFile = () => {
-    const link = document.createElement('a');
-    link.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}${currentAttachment.url}`;
-    link.download = currentAttachment.originalName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Extract filename from URL (remove leading slash if present)
+    const filename = currentAttachment.url.startsWith('/') ? currentAttachment.url.substring(1) : currentAttachment.url;
+    uploadAPI.downloadAttachment(filename, currentAttachment.originalName);
   };
 
   return (
@@ -111,34 +149,59 @@ const AttachmentViewer = ({ attachments, isOpen, onClose, initialIndex = 0 }: At
 
         {/* Content */}
         <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
-          {isImage ? (
-            <img
-              src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${currentAttachment.url}`}
-              alt={currentAttachment.originalName}
-              className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
-            />
-          ) : isPDF ? (
-            <iframe
-              src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${currentAttachment.url}`}
-              className="w-full h-full border-0 rounded-lg"
-              title={currentAttachment.originalName}
-            />
-          ) : (
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <p className="text-gray-600 mb-4">Preview not available for this file type</p>
-              <button
-                onClick={downloadFile}
-                className="btn btn-primary"
-              >
-                Download File
-              </button>
-            </div>
-          )}
+          {(() => {
+            const filename = currentAttachment.url.startsWith('/') ? currentAttachment.url.substring(1) : currentAttachment.url;
+            const isLoading = loading[filename];
+            const blobUrl = attachmentUrls[filename];
+
+            if (isLoading) {
+              return (
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading attachment...</p>
+                </div>
+              );
+            }
+
+            if (isImage) {
+              return blobUrl ? (
+                <img
+                  src={blobUrl}
+                  alt={currentAttachment.originalName}
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                />
+              ) : (
+                <p className="text-gray-600">Image preview not available</p>
+              );
+            } else if (isPDF) {
+              return blobUrl ? (
+                <iframe
+                  src={blobUrl}
+                  className="w-full h-full border-0 rounded-lg"
+                  title={currentAttachment.originalName}
+                />
+              ) : (
+                <p className="text-gray-600">PDF preview not available</p>
+              );
+            } else {
+              return (
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-600 mb-4">Preview not available for this file type</p>
+                  <button
+                    onClick={downloadFile}
+                    className="btn btn-primary"
+                  >
+                    Download File
+                  </button>
+                </div>
+              );
+            }
+          })()}
         </div>
 
         {/* Thumbnail strip for multiple files */}
@@ -155,7 +218,7 @@ const AttachmentViewer = ({ attachments, isOpen, onClose, initialIndex = 0 }: At
                 >
                   {attachment.mimetype.startsWith('image/') ? (
                     <img
-                      src={`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}${attachment.url}`}
+                      src={attachmentUrls[attachment.url.startsWith('/') ? attachment.url.substring(1) : attachment.url] || getFileUrl(attachment.url)}
                       alt={attachment.originalName}
                       className="w-full h-full object-cover"
                     />

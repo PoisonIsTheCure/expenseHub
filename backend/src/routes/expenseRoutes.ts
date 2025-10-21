@@ -49,6 +49,7 @@ router.post(
       .optional()
       .isIn(['EUR'])
       .withMessage('Invalid currency'),
+    body('attachments').optional().isArray().withMessage('Attachments must be an array'),
   ]),
   createExpense
 );

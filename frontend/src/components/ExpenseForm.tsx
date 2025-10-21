@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { EXPENSE_CATEGORIES, Expense } from '../types';
 import { DEFAULT_CURRENCY } from '../config/currency';
+import { uploadAPI } from '../services/api';
 
 interface ExpenseFormProps {
   onSubmit: (data: any) => void;
@@ -20,33 +21,42 @@ const ExpenseForm = ({ onSubmit, onCancel, initialData, households = [] }: Expen
   });
 
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  const [uploading, setUploading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const submitData = {
-      ...formData,
-      amount: parseFloat(formData.amount),
-      householdId: formData.householdId || undefined,
-    };
+    setUploading(true);
     
-    // Create FormData for file upload
-    const formDataToSubmit = new FormData();
-    Object.keys(submitData).forEach(key => {
-      const value = (submitData as any)[key];
-      // Only append if value is not undefined or empty string
-      if (value !== undefined && value !== '') {
-        formDataToSubmit.append(key, value);
+    try {
+      const submitData = {
+        ...formData,
+        amount: parseFloat(formData.amount),
+        householdId: formData.householdId || undefined,
+        attachments: [] as any[],
+      };
+      
+      // Upload files first if any
+      if (selectedFiles && selectedFiles.length > 0) {
+        const files = Array.from(selectedFiles);
+        const uploadResponse = await uploadAPI.uploadFiles(files);
+        submitData.attachments = uploadResponse.data.files || [];
       }
-    });
-    
-    // Add files if any
-    if (selectedFiles) {
-      Array.from(selectedFiles).forEach(file => {
-        formDataToSubmit.append('receipts', file);
-      });
+      
+      // Submit expense data with file metadata
+      onSubmit(submitData);
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      // Still submit the expense without attachments
+      const submitData = {
+        ...formData,
+        amount: parseFloat(formData.amount),
+        householdId: formData.householdId || undefined,
+        attachments: [],
+      };
+      onSubmit(submitData);
+    } finally {
+      setUploading(false);
     }
-    
-    onSubmit(formDataToSubmit);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,6 +143,7 @@ const ExpenseForm = ({ onSubmit, onCancel, initialData, households = [] }: Expen
         <label className="label">Receipts (Optional)</label>
         <input
           type="file"
+          name="receipts"
           multiple
           accept="image/*,.pdf"
           onChange={handleFileChange}
@@ -154,8 +165,8 @@ const ExpenseForm = ({ onSubmit, onCancel, initialData, households = [] }: Expen
       </div>
 
       <div className="flex gap-3 pt-4">
-        <button type="submit" className="btn btn-primary flex-1">
-          {initialData ? 'Update' : 'Create'} Expense
+        <button type="submit" disabled={uploading} className="btn btn-primary flex-1">
+          {uploading ? 'Uploading...' : (initialData ? 'Update' : 'Create')} Expense
         </button>
         <button type="button" onClick={onCancel} className="btn btn-secondary flex-1">
           Cancel

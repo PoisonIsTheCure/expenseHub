@@ -18,6 +18,7 @@ import settlementRoutes from './routes/settlementRoutes';
 import recurringExpenseRoutes from './routes/recurringExpenseRoutes';
 import analyticsRoutes from './routes/analyticsRoutes';
 import exportRoutes from './routes/exportRoutes';
+import uploadRoutes from './routes/uploadRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -39,7 +40,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve uploaded files
-app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Health check endpoint
 app.get('/health', (_req: Request, res: Response) => {
@@ -56,6 +57,7 @@ app.use('/api/settlements', settlementRoutes);
 app.use('/api/recurring-expenses', recurringExpenseRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/export', exportRoutes);
+app.use('/api', uploadRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {

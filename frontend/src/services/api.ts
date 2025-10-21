@@ -33,6 +33,41 @@ api.interceptors.response.use(
 
 export default api;
 
+// Upload & Attachment API
+export const uploadAPI = {
+  uploadFiles: (files: File[]) => {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('receipts', file);
+    });
+
+    return api.post('/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+
+  getAttachmentUrl: (filename: string) => {
+    return `${import.meta.env.VITE_API_URL || '/api'}/upload/${filename}`;
+  },
+
+  getAttachment: (filename: string) => {
+    return api.get(`/upload/${filename}`, {
+      responseType: 'blob', // For binary data
+    });
+  },
+
+  downloadAttachment: (filename: string, originalName: string) => {
+    const link = document.createElement('a');
+    link.href = uploadAPI.getAttachmentUrl(filename);
+    link.download = originalName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  },
+};
+
 // Auth API
 export const authAPI = {
   login: (email: string, password: string) =>
@@ -73,28 +108,8 @@ export const expenseAPI = {
   getById: (id: string) => api.get(`/expenses/${id}`),
   getByHousehold: (householdId: string) =>
     api.get(`/expenses/household/${householdId}`),
-  create: (data: any) => {
-    // Check if data is FormData (for file uploads)
-    if (data instanceof FormData) {
-      return api.post('/expenses', data, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-    }
-    return api.post('/expenses', data);
-  },
-  update: (id: string, data: any) => {
-    // Check if data is FormData (for file uploads)
-    if (data instanceof FormData) {
-      return api.put(`/expenses/${id}`, data, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-    }
-    return api.put(`/expenses/${id}`, data);
-  },
+  create: (data: any) => api.post('/expenses', data),
+  update: (id: string, data: any) => api.put(`/expenses/${id}`, data),
   delete: (id: string) => api.delete(`/expenses/${id}`),
 };
 
@@ -116,14 +131,7 @@ export const settlementAPI = {
   getHouseholdSettlements: (householdId: string) => 
     api.get(`/settlements/households/${householdId}`),
   getUserSettlements: () => api.get('/settlements/user'),
-  create: (data: any) => {
-    if (data instanceof FormData) {
-      return api.post('/settlements', data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-    }
-    return api.post('/settlements', data);
-  },
+  create: (data: any) => api.post('/settlements', data),
   updateStatus: (id: string, status: string) => 
     api.patch(`/settlements/${id}/status`, { status }),
 };
@@ -157,7 +165,7 @@ export const exportAPI = {
     if (params?.householdId) queryParams.append('householdId', params.householdId);
     if (params?.startDate) queryParams.append('startDate', params.startDate);
     if (params?.endDate) queryParams.append('endDate', params.endDate);
-    
+
     return api.get(`/export/expenses/csv?${queryParams.toString()}`, {
       responseType: 'blob',
     });
@@ -167,7 +175,7 @@ export const exportAPI = {
     if (params?.householdId) queryParams.append('householdId', params.householdId);
     if (params?.startDate) queryParams.append('startDate', params.startDate);
     if (params?.endDate) queryParams.append('endDate', params.endDate);
-    
+
     return api.get(`/export/expenses/pdf?${queryParams.toString()}`, {
       responseType: 'blob',
     });
@@ -178,4 +186,3 @@ export const exportAPI = {
     });
   },
 };
-

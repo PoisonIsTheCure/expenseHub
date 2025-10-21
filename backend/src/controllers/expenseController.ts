@@ -4,6 +4,14 @@ import { Household } from '../models/Household';
 import { AuthRequest } from '../types';
 import { calculateSplitDetails } from '../utils/splitCalculations';
 
+// Normalize stored file URLs by stripping any leading "/uploads/" and
+// ensuring a single leading "/" so the frontend can safely prefix with VITE_UPLOADS_URL
+const normalizeFileUrl = (url: string): string => {
+  if (!url) return url;
+  const filename = url.replace(/^\/?uploads\//, '');
+  return `${filename}`;
+};
+
 export const getAllExpenses = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user?.id;
@@ -19,6 +27,7 @@ export const getAllExpenses = async (req: AuthRequest, res: Response): Promise<v
       householdId: { $exists: false }
     })
       .populate('ownerId', 'name email')
+      .populate('paidBy', 'name email')
       .sort({ date: -1 });
 
     // Get households where user is a member
@@ -34,6 +43,7 @@ export const getAllExpenses = async (req: AuthRequest, res: Response): Promise<v
     })
       .populate('ownerId', 'name email')
       .populate('householdId', 'name')
+      .populate('paidBy', 'name email')
       .sort({ date: -1 });
 
     // Combine and sort all expenses
@@ -54,6 +64,9 @@ export const createExpense = async (req: AuthRequest, res: Response): Promise<vo
     const userId = req.user?.id;
 
     console.log('Creating expense:', { amount, description, category, date, householdId, currency, splitMethod, userId });
+    console.log('req.files:', req.files);
+    console.log('req.body.attachments:', req.body.attachments);
+    console.log('req.body.attachments:', req.body.attachments);
 
     // Validate required fields
     if (!amount || !description || !category) {
@@ -100,6 +113,26 @@ export const createExpense = async (req: AuthRequest, res: Response): Promise<vo
       );
     }
 
+    // Handle attachments from both uploaded files and body data
+    let attachments = (req.body.attachments || []) as Array<any>;
+
+    // If files were uploaded via multer, add them to attachments
+    if (req.files && (req.files as any[]).length > 0) {
+      const uploadedFiles = (req.files as any[]).map((file) => ({
+        filename: file.filename,
+        originalName: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        url: `/${file.filename}`, // Store relative path
+      }));
+      attachments = [...attachments, ...uploadedFiles];
+    }
+
+    const normalizedAttachments = attachments.map((att: any) => ({
+      ...att,
+      url: normalizeFileUrl(att.url),
+    }));
+
     const expenseData = {
       amount: parseFloat(amount),
       description: description.trim(),
@@ -111,13 +144,7 @@ export const createExpense = async (req: AuthRequest, res: Response): Promise<vo
       paidBy: paidBy || userId,
       splitMethod: expenseSplitMethod,
       splitDetails: calculatedSplitDetails,
-      attachments: req.files ? (req.files as any[]).map((file: any) => ({
-        filename: file.filename,
-        originalName: file.originalname,
-        mimetype: file.mimetype,
-        size: file.size,
-        url: `/uploads/${file.filename}`,
-      })) : [],
+      attachments: normalizedAttachments,
     };
 
     console.log('Creating expense with data:', expenseData);
@@ -151,7 +178,8 @@ export const getExpenseById = async (req: AuthRequest, res: Response): Promise<v
     const userId = req.user?.id;
     const expense = await Expense.findById(req.params.id)
       .populate('ownerId', 'name email')
-      .populate('householdId', 'name');
+      .populate('householdId', 'name')
+      .populate('paidBy', 'name email');
 
     if (!expense) {
       res.status(404).json({ message: 'Expense not found' });
@@ -236,16 +264,13 @@ export const updateExpense = async (req: AuthRequest, res: Response): Promise<vo
       expense.splitDetails = splitDetails;
     }
 
-    // Handle file uploads if any
-    if (req.files && (req.files as any[]).length > 0) {
-      const newAttachments = (req.files as any[]).map((file: any) => ({
-        filename: file.filename,
-        originalName: file.originalname,
-        mimetype: file.mimetype,
-        size: file.size,
-        url: `/uploads/${file.filename}`,
+    // Normalize attachments if provided in body
+    if (req.body.attachments) {
+      const normalized = (req.body.attachments as Array<any>).map((att: any) => ({
+        ...att,
+        url: normalizeFileUrl(att.url),
       }));
-      expense.attachments = [...(expense.attachments || []), ...newAttachments];
+      expense.attachments = normalized;
     }
 
     await expense.save();
@@ -307,6 +332,7 @@ export const getHouseholdExpenses = async (req: AuthRequest, res: Response): Pro
 
     const expenses = await Expense.find({ householdId })
       .populate('ownerId', 'name email')
+      .populate('paidBy', 'name email')
       .sort({ date: -1 });
 
     res.json({ expenses });
