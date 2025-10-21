@@ -1,0 +1,161 @@
+---
+- name: Deploy ExpenseHub to Digital Ocean
+  hosts: production
+  become: yes
+  vars_files:
+    - vars/production.yml
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - git
+        state: present
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+        state: present
+
+    - name: Install Docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: present
+        update_cache: yes
+
+    - name: Ensure Docker service is running
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add user to docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    - name: Install Docker Compose standalone
+      get_url:
+        url: https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+
+    - name: Create application directory
+      file:
+        path: "{{ app_directory }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Clone or update repository
+      git:
+        repo: "{{ git_repo }}"
+        dest: "{{ app_directory }}"
+        version: "{{ git_branch }}"
+        force: yes
+      become_user: "{{ ansible_user }}"
+
+    - name: Create .env file from template
+      template:
+        src: templates/env.j2
+        dest: "{{ app_directory }}/.env"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0600'
+
+    - name: Create uploads directory
+      file:
+        path: "{{ app_directory }}/backend/uploads"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Stop existing containers
+      command: docker compose down
+      args:
+        chdir: "{{ app_directory }}"
+      ignore_errors: yes
+      become_user: "{{ ansible_user }}"
+
+    - name: Pull latest Docker images
+      command: docker compose pull
+      args:
+        chdir: "{{ app_directory }}"
+      become_user: "{{ ansible_user }}"
+
+    - name: Build and start containers
+      command: docker compose up -d --build
+      args:
+        chdir: "{{ app_directory }}"
+      become_user: "{{ ansible_user }}"
+
+    - name: Wait for application to be ready
+      wait_for:
+        port: 80
+        delay: 10
+        timeout: 60
+
+    - name: Check application health
+      uri:
+        url: "http://localhost/api/health"
+        status_code: 200
+      register: health_check
+      retries: 5
+      delay: 10
+      until: health_check.status == 200
+
+    - name: Set up log rotation
+      template:
+        src: templates/logrotate.j2
+        dest: /etc/logrotate.d/expensehub
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Set up backup cron job
+      cron:
+        name: "Backup ExpenseHub database"
+        minute: "0"
+        hour: "2"
+        job: "cd {{ app_directory }} && docker compose exec -T mongodb mongodump --db expensehub --archive > /var/backups/expensehub_$(date +\\%Y\\%m\\%d).archive"
+        user: "{{ ansible_user }}"
+
+    - name: Create backups directory
+      file:
+        path: /var/backups
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Display deployment info
+      debug:
+        msg:
+          - "Deployment completed successfully!"
+          - "Application URL: http://{{ ansible_host }}"
+          - "API Health: http://{{ ansible_host }}/api/health"
+          - "Backend logs: docker compose logs -f backend"
+          - "Frontend logs: docker compose logs -f frontend"
+

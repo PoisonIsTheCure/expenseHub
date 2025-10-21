@@ -1,0 +1,10 @@
+{{ app_directory }}/logs/*.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    notifempty
+    missingok
+    create 0640 {{ ansible_user }} {{ ansible_user }}
+}
+

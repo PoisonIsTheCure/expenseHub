@@ -1,0 +1,63 @@
+---
+- name: Set up SSL with Let's Encrypt
+  hosts: production
+  become: yes
+  vars_files:
+    - vars/production.yml
+
+  tasks:
+    - name: Install Certbot
+      apt:
+        name:
+          - certbot
+          - python3-certbot-nginx
+        state: present
+
+    - name: Stop nginx temporarily
+      command: docker compose stop nginx
+      args:
+        chdir: "{{ app_directory }}"
+      ignore_errors: yes
+
+    - name: Obtain SSL certificate
+      command: >
+        certbot certonly --standalone
+        --non-interactive
+        --agree-tos
+        --email {{ ssl_email }}
+        -d {{ domain_name }}
+      when: use_ssl
+
+    - name: Create nginx SSL configuration
+      template:
+        src: templates/nginx-ssl.conf.j2
+        dest: "{{ app_directory }}/nginx/nginx-ssl.conf"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0644'
+      when: use_ssl
+
+    - name: Update docker-compose to mount SSL certificates
+      blockinfile:
+        path: "{{ app_directory }}/docker-compose.yml"
+        marker: "# {mark} ANSIBLE MANAGED SSL BLOCK"
+        insertafter: "nginx:"
+        block: |2
+              volumes:
+                - /etc/letsencrypt:/etc/letsencrypt:ro
+      when: use_ssl
+
+    - name: Restart services
+      command: docker compose up -d
+      args:
+        chdir: "{{ app_directory }}"
+
+    - name: Set up SSL renewal cron job
+      cron:
+        name: "Renew SSL certificates"
+        minute: "0"
+        hour: "3"
+        weekday: "1"
+        job: "certbot renew --quiet && cd {{ app_directory }} && docker compose restart nginx"
+      when: use_ssl
+

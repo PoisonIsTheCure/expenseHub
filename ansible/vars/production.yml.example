@@ -1,0 +1,36 @@
+---
+# Application settings
+app_directory: /opt/expensehub
+git_repo: https://github.com/YOUR_USERNAME/expenseHub.git
+git_branch: main
+
+# Environment variables
+node_env: production
+backend_port: 5000
+frontend_port: 3000
+
+# MongoDB settings
+mongodb_uri: mongodb://mongodb:27017/expensehub
+mongodb_database: expensehub
+
+# JWT settings - CHANGE THESE!
+# Generate with: openssl rand -base64 32
+jwt_secret: CHANGE_THIS_TO_A_SECURE_RANDOM_STRING_MIN_32_CHARS
+jwt_expires_in: 7d
+
+# CORS settings
+cors_origin: "*"
+
+# Admin user (will be created on first run) - CHANGE THESE!
+admin_email: admin@example.com
+admin_password: CHANGE_THIS_SECURE_PASSWORD
+admin_name: Admin User
+
+# API URL (for frontend)
+vite_api_url: /api
+
+# Optional: SSL settings (if using Let's Encrypt)
+use_ssl: false
+domain_name: your-domain.com
+ssl_email: your-email@example.com
+

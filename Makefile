@@ -74,3 +74,23 @@ health: ## Check health status of all services
 	@echo "Checking service health..."
 	@docker compose ps
 
+# Deployment targets
+deploy-prod: ## Deploy to production (Digital Ocean)
+	@echo "Deploying to production..."
+	@./scripts/deploy.sh
+
+deploy-check: ## Test connection to production server
+	@ansible production -i ansible/inventory/production.ini -m ping
+
+deploy-ssl: ## Set up SSL on production
+	@ansible-playbook -i ansible/inventory/production.ini ansible/ssl-setup.yml
+
+deploy-rollback: ## Rollback to previous version
+	@ansible-playbook -i ansible/inventory/production.ini ansible/rollback.yml
+
+deploy-logs: ## View production logs (requires DROPLET_IP env var)
+	@ssh root@$(DROPLET_IP) 'cd /opt/expensehub && docker compose logs -f'
+
+deploy-status: ## Check production status (requires DROPLET_IP env var)
+	@ssh root@$(DROPLET_IP) 'cd /opt/expensehub && docker compose ps'
+
