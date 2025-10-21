@@ -1,0 +1,133 @@
+---
+- name: Deploy Custom SSL Certificates
+  hosts: production
+  become: yes
+  vars_files:
+    - vars/production.yml
+
+  tasks:
+    - name: Check if domain certificate exists locally
+      stat:
+        path: "{{ playbook_dir }}/../certificates/domain.cert.pem"
+      register: domain_cert_stat
+      delegate_to: localhost
+      become: no
+
+    - name: Check if private key exists locally
+      stat:
+        path: "{{ playbook_dir }}/../certificates/private.key.pem"
+      register: privkey_stat
+      delegate_to: localhost
+      become: no
+
+    - name: Fail if certificate files are missing
+      fail:
+        msg: |
+          SSL certificate files not found!
+          
+          Missing files:
+          {% if not domain_cert_stat.stat.exists %}  - {{ playbook_dir }}/../certificates/domain.cert.pem{% endif %}
+          {% if not privkey_stat.stat.exists %}  - {{ playbook_dir }}/../certificates/private.key.pem{% endif %}
+          
+          Please place your certificate files in the certificates/ directory:
+            - domain.cert.pem (your SSL certificate)
+            - private.key.pem (your private key)
+      when: not domain_cert_stat.stat.exists or not privkey_stat.stat.exists
+
+    - name: Create SSL certificates directory on server
+      file:
+        path: "{{ app_directory }}/ssl"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0750'
+
+    - name: Copy SSL certificate chain to server
+      copy:
+        src: "../certificates/domain.cert.pem"
+        dest: "{{ app_directory }}/ssl/fullchain.pem"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0644'
+
+    - name: Copy SSL private key to server
+      copy:
+        src: "../certificates/private.key.pem"
+        dest: "{{ app_directory }}/ssl/privkey.pem"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0600'
+
+    - name: Create nginx SSL configuration
+      template:
+        src: templates/nginx-ssl-custom.conf.j2
+        dest: "{{ app_directory }}/nginx/nginx.conf"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0644'
+
+    - name: Add SSL certificate volume mount to nginx service
+      lineinfile:
+        path: "{{ app_directory }}/docker-compose.yml"
+        insertafter: '^\s+- \./nginx/nginx\.conf:/etc/nginx/nginx\.conf:ro'
+        line: '      - ./ssl:/etc/nginx/ssl:ro'
+        state: present
+        backup: yes
+
+    - name: Add port 443 to nginx service
+      lineinfile:
+        path: "{{ app_directory }}/docker-compose.yml"
+        insertafter: '^\s+- "80:80"'
+        line: '      - "443:443"'
+        state: present
+
+    - name: Stop nginx container to apply changes
+      command: docker compose stop nginx
+      args:
+        chdir: "{{ app_directory }}"
+      become_user: "{{ ansible_user }}"
+      ignore_errors: yes
+
+    - name: Start nginx container with new SSL configuration
+      command: docker compose up -d nginx
+      args:
+        chdir: "{{ app_directory }}"
+      become_user: "{{ ansible_user }}"
+
+    - name: Check nginx configuration syntax
+      command: docker compose exec nginx nginx -t
+      args:
+        chdir: "{{ app_directory }}"
+      register: nginx_test
+      ignore_errors: yes
+      become_user: "{{ ansible_user }}"
+      retries: 3
+      delay: 2
+
+    - name: Display nginx configuration test results
+      debug:
+        msg: "Nginx configuration test {{ 'PASSED' if nginx_test.rc == 0 else 'FAILED - Check logs with: docker compose logs nginx' }}"
+
+    - name: Wait for HTTPS to be available
+      wait_for:
+        port: 443
+        delay: 5
+        timeout: 30
+
+    - name: Verify SSL certificate
+      uri:
+        url: "https://{{ domain_name }}"
+        validate_certs: yes
+        return_content: no
+      ignore_errors: yes
+      register: ssl_check
+
+    - name: Display SSL deployment status
+      debug:
+        msg:
+          - "SSL certificates deployed successfully!"
+          - "HTTPS URL: https://{{ domain_name }}"
+          - "HTTP (redirects to HTTPS): http://{{ domain_name }}"
+          - "Certificate location: {{ app_directory }}/ssl/"
+          - "SSL Status: {{ 'OK' if ssl_check.status == 200 else 'Warning - Please verify manually' }}"
+

@@ -31,6 +31,12 @@ Thumbs.db
 
 # Ansible
 ansible/vars/production.yml
+ansible/inventory/production.ini
+
+# SSL Certificates (keep the folder but ignore certificate files)
+certificates/*.pem
+certificates/*.crt
+certificates/*.key
 
 # Test coverage
 coverage/

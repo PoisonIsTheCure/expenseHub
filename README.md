@@ -223,6 +223,30 @@ All amounts are stored internally in EUR and converted dynamically for display b
 - Single-column layouts for small screens
 - Optimized for screen widths from 360px to 1440px
 
+## 🔒 SSL/HTTPS Deployment
+
+ExpenseHub supports deployment with custom SSL certificates for secure HTTPS access.
+
+### Quick SSL Setup
+
+1. Place your SSL certificates in the `certificates/` directory:
+   - `certificates/fullchain.pem` - Your certificate chain
+   - `certificates/privkey.pem` - Your private key
+
+2. Deploy with SSL:
+```bash
+ansible-playbook -i ansible/inventory/production.ini ansible/ssl-custom.yml
+```
+
+📚 **For detailed SSL setup instructions, see [SSL_DEPLOYMENT.md](SSL_DEPLOYMENT.md)**
+
+Features:
+- ✅ Custom SSL certificate support
+- ✅ Automatic HTTP to HTTPS redirect
+- ✅ TLS 1.2 and 1.3 support
+- ✅ Security headers and best practices
+- ✅ Easy certificate renewal process
+
 ## 🐳 Docker Commands
 
 ```bash

@@ -1,0 +1,11 @@
+---
+# Complete deployment playbook that includes custom SSL certificate setup
+# This is a convenience playbook that combines the main deployment with SSL setup
+
+- name: Deploy ExpenseHub Application
+  import_playbook: deploy.yml
+
+- name: Deploy Custom SSL Certificates
+  import_playbook: ssl-custom.yml
+
+

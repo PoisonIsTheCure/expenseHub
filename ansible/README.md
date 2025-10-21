@@ -6,17 +6,20 @@ This directory contains Ansible playbooks and configuration for deploying Expens
 
 ```
 ansible/
-├── deploy.yml              # Main deployment playbook
-├── ssl-setup.yml          # SSL/HTTPS configuration with Let's Encrypt
-├── rollback.yml           # Rollback to previous version
+├── deploy.yml                    # Main deployment playbook
+├── deploy-with-ssl.yml          # Full deployment including custom SSL
+├── ssl-setup.yml                # SSL/HTTPS with Let's Encrypt (auto-renewal)
+├── ssl-custom.yml               # SSL/HTTPS with custom certificates
+├── rollback.yml                 # Rollback to previous version
 ├── inventory/
-│   └── production.ini     # Production server configuration
+│   └── production.ini           # Production server configuration
 ├── vars/
-│   └── production.yml     # Production environment variables
+│   └── production.yml           # Production environment variables
 └── templates/
-    ├── env.j2             # Environment file template
-    ├── nginx-ssl.conf.j2  # Nginx SSL configuration
-    └── logrotate.j2       # Log rotation configuration
+    ├── env.j2                   # Environment file template
+    ├── nginx-ssl.conf.j2        # Nginx SSL config (Let's Encrypt)
+    ├── nginx-ssl-custom.conf.j2 # Nginx SSL config (Custom certs)
+    └── logrotate.j2             # Log rotation configuration
 ```
 
 ## Quick Start
@@ -54,7 +57,7 @@ ansible-playbook -i inventory/production.ini deploy.yml
 ```
 
 ### ssl-setup.yml
-Configures SSL certificates with Let's Encrypt.
+Configures SSL certificates with Let's Encrypt (automatic renewal).
 
 **Prerequisites:**
 - Domain name pointing to your server
@@ -68,6 +71,36 @@ Configures SSL certificates with Let's Encrypt.
 # ssl_email: your-email@example.com
 
 ansible-playbook -i inventory/production.ini ssl-setup.yml
+```
+
+### ssl-custom.yml
+Deploys custom SSL certificates (for pre-existing certificates).
+
+**Prerequisites:**
+- Your SSL certificates in `../certificates/` directory:
+  - `fullchain.pem` - Certificate chain
+  - `privkey.pem` - Private key
+- Domain name pointing to your server
+- Port 443 open
+
+**Usage:**
+```bash
+# Place certificates first:
+cp /path/to/your/fullchain.pem ../certificates/
+cp /path/to/your/privkey.pem ../certificates/
+
+# Deploy SSL
+ansible-playbook -i inventory/production.ini ssl-custom.yml
+```
+
+📚 **See [../SSL_DEPLOYMENT.md](../SSL_DEPLOYMENT.md) for detailed SSL setup guide**
+
+### deploy-with-ssl.yml
+Convenience playbook that runs full deployment + custom SSL setup.
+
+**Usage:**
+```bash
+ansible-playbook -i inventory/production.ini deploy-with-ssl.yml
 ```
 
 ### rollback.yml
