@@ -38,14 +38,14 @@ const BalancesView = ({ householdId }: BalancesViewProps) => {
     return null;
   }
 
-  const { balances: memberBalances, debts, currency } = balances;
+  const { balances: memberBalances, debts } = balances;
   
-  const getCurrencySymbol = (code: string) => {
+  const getCurrencySymbol = () => {
     // Currency is now always EUR
     return '€';
   };
 
-  const symbol = getCurrencySymbol(currency);
+  const symbol = getCurrencySymbol();
 
   return (
     <div className="space-y-6">

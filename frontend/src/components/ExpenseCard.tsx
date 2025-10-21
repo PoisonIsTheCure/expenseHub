@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Expense } from '../types';
-import { formatCurrency } from '../config/currency';
 import AttachmentViewer from './AttachmentViewer';
 
 interface ExpenseCardProps {
@@ -15,7 +14,7 @@ const ExpenseCard = ({ expense, onEdit, onDelete, currentUserId }: ExpenseCardPr
   const isOwner = currentUserId === (expense.ownerId._id || expense.ownerId.id);
   const date = new Date(expense.date).toLocaleDateString();
 
-  const getCurrencySymbol = (currencyCode: string) => {
+  const getCurrencySymbol = () => {
     // Currency is now always EUR, so we can use the centralized formatter
     return '€';
   };
@@ -57,7 +56,7 @@ const ExpenseCard = ({ expense, onEdit, onDelete, currentUserId }: ExpenseCardPr
         </div>
         <div className="text-right ml-4">
           <p className="text-2xl font-bold text-gray-900">
-            {getCurrencySymbol(expense.currency)}{expense.amount.toFixed(2)}
+            {getCurrencySymbol()}{expense.amount.toFixed(2)}
           </p>
           {expense.attachments && expense.attachments.length > 0 && (
             <button

@@ -104,7 +104,7 @@ const Budget = () => {
     }
   };
 
-  const getCurrencySymbol = (currencyCode: string) => {
+  const getCurrencySymbol = () => {
     // Currency is now always EUR
     return '€';
   };
@@ -171,19 +171,19 @@ const Budget = () => {
                     <div className="flex justify-between">
                       <span className="text-gray-600">Monthly Limit:</span>
                       <span className="font-semibold">
-                        {getCurrencySymbol(personalBudget.currency)}{(personalBudget.monthlyLimit || 0).toFixed(2)}
+                        {getCurrencySymbol()}{(personalBudget.monthlyLimit || 0).toFixed(2)}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Total Spent:</span>
                       <span className="font-semibold text-red-600">
-                        {getCurrencySymbol(personalBudget.currency)}{(personalBudget.totalSpent || 0).toFixed(2)}
+                        {getCurrencySymbol()}{(personalBudget.totalSpent || 0).toFixed(2)}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Remaining:</span>
                       <span className={`font-semibold ${(personalBudget.remaining || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {getCurrencySymbol(personalBudget.currency)}{(personalBudget.remaining || 0).toFixed(2)}
+                        {getCurrencySymbol()}{(personalBudget.remaining || 0).toFixed(2)}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -278,25 +278,25 @@ const Budget = () => {
                             <div className="flex justify-between">
                               <span className="text-gray-600">Monthly Limit:</span>
                               <span className="font-semibold">
-                                {getCurrencySymbol(budget.currency)}{(budget.monthlyLimit || 0).toFixed(2)}
+                                {getCurrencySymbol()}{(budget.monthlyLimit || 0).toFixed(2)}
                               </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-600">Total Spent:</span>
                               <span className="font-semibold text-red-600">
-                                {getCurrencySymbol(budget.currency)}{(budget.totalSpent || 0).toFixed(2)}
+                                {getCurrencySymbol()}{(budget.totalSpent || 0).toFixed(2)}
                               </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-600">Contributions:</span>
                               <span className="font-semibold text-green-600">
-                                {getCurrencySymbol(budget.currency)}{(budget.totalContributions || 0).toFixed(2)}
+                                {getCurrencySymbol()}{(budget.totalContributions || 0).toFixed(2)}
                               </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-600">Remaining:</span>
                               <span className={`font-semibold ${(budget.remaining || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {getCurrencySymbol(budget.currency)}{(budget.remaining || 0).toFixed(2)}
+                                {getCurrencySymbol()}{(budget.remaining || 0).toFixed(2)}
                               </span>
                             </div>
                           </div>

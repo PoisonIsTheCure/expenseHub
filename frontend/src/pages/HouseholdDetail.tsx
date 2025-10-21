@@ -57,7 +57,7 @@ const HouseholdDetail = () => {
   const [memberEmail, setMemberEmail] = useState('');
   const [contributionAmount, setContributionAmount] = useState('');
   const [budgetLimit, setBudgetLimit] = useState('');
-  const [budgetCurrency, setBudgetCurrency] = useState(DEFAULT_CURRENCY);
+  // const [budgetCurrency, setBudgetCurrency] = useState<"EUR">(DEFAULT_CURRENCY);
   const [contributionStats, setContributionStats] = useState<ContributionStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(false);
 
@@ -71,7 +71,7 @@ const HouseholdDetail = () => {
   useEffect(() => {
     if (currentHousehold?.budget) {
       setBudgetLimit(currentHousehold.budget.monthlyLimit?.toString() || '');
-      setBudgetCurrency(currentHousehold.budget.currency || 'EUR');
+      // setBudgetCurrency(currentHousehold.budget.currency || 'EUR');
     }
   }, [currentHousehold]);
 
@@ -168,7 +168,7 @@ const HouseholdDetail = () => {
   }
 
   const isCreator = currentHousehold.createdBy._id === user?.id || currentHousehold.createdBy.id === user?.id;
-  const getCurrencySymbol = (code: string) => {
+  const getCurrencySymbol = () => {
     // Currency is now always EUR
     return '€';
   };
@@ -203,7 +203,7 @@ const HouseholdDetail = () => {
           <div className="card bg-gradient-to-br from-primary-50 to-primary-100">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Household Budget</h3>
             <p className="text-3xl font-bold text-primary-700">
-              {getCurrencySymbol(currentHousehold.budget.currency)}
+              {getCurrencySymbol()}
               {currentHousehold.budget.monthlyLimit.toLocaleString()}
             </p>
             <p className="text-sm text-gray-600 mt-1">Monthly Limit</p>
@@ -304,7 +304,7 @@ const HouseholdDetail = () => {
               <div className="mb-6 p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
                 <p className="text-sm text-gray-600 mb-1">Total Contributions</p>
                 <p className="text-3xl font-bold text-green-700">
-                  {getCurrencySymbol(contributionStats.currency)}
+                  {getCurrencySymbol()}
                   {contributionStats.totalContributions.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
@@ -322,7 +322,7 @@ const HouseholdDetail = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-bold text-gray-900">
-                          {getCurrencySymbol(contributionStats.currency)}
+                          {getCurrencySymbol()}
                           {stat.total.toLocaleString(undefined, {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
@@ -349,7 +349,7 @@ const HouseholdDetail = () => {
                             {new Date(contrib.date).toLocaleDateString()}
                           </span>
                           <span className="font-medium text-gray-900">
-                            {getCurrencySymbol(contributionStats.currency)}
+                            {getCurrencySymbol()}
                             {contrib.amount.toLocaleString(undefined, {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
