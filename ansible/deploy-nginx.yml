@@ -1,0 +1,32 @@
+---
+- name: Deploy host Nginx reverse-proxy config
+  hosts: production
+  become: true
+  vars_files:
+    - vars/production.yml
+
+  tasks:
+    - name: Ensure remote nginx config directory exists
+      file:
+        path: "{{ nginx_conf_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Render nginx config into conf.d
+      template:
+        src: "{{ nginx_conf_template }}"
+        dest: "{{ nginx_conf_dir }}/{{ nginx_conf_filename }}"
+        mode: "0644"
+      notify: Validate and reload nginx
+
+  handlers:
+    - name: Validate and reload nginx
+      block:
+        - name: Validate nginx config
+          command: nginx -t
+          changed_when: false
+
+        - name: Reload nginx service
+          service:
+            name: nginx
+            state: reloaded

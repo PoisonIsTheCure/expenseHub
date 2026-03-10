@@ -20,16 +20,18 @@ It supports user authentication, expense management, shared households, budgets,
 
 - **Frontend:** React, TypeScript, Vite, Tailwind CSS, Redux Toolkit
 - **Backend:** Node.js, Express, TypeScript, MongoDB (Mongoose), JWT
-- **Infrastructure:** Docker, Docker Compose, Nginx
-- **Deployment Automation:** Ansible playbooks in `ansible/`
+- **Infrastructure:** Docker, Docker Compose, Host Nginx
+- **Deployment Automation:** Jenkins + Ansible (`ansible/deploy-nginx.yml`)
 
 ## Architecture
 
 ```text
-Browser -> Nginx -> Frontend + Backend API -> MongoDB
+Browser -> Host Nginx -> Frontend container + Backend container -> MongoDB container
 ```
 
-- Nginx serves the frontend and proxies API requests
+- Nginx runs on the server host and loads config from `/etc/nginx/conf.d`
+- Frontend, backend, and MongoDB each run in separate Docker containers
+- MongoDB data is persisted on a host path (`DB_DATA_PATH`) mounted into the container
 - Backend exposes REST endpoints under `/api`
 - MongoDB stores users, households, expenses, budgets, settlements, and recurring expenses
 
@@ -49,7 +51,7 @@ docker-compose up --build -d
 ```
 
 4. Open the app:
-- `http://localhost`
+- `http://localhost:3000`
 
 5. Default admin credentials (change for production):
 - Email: value from `ADMIN_EMAIL` (default `admin@expensehub.com`)
@@ -93,35 +95,50 @@ Important variables:
 
 ## Deployment
 
-### Docker Deployment
+### Docker Deployment (containers only)
 
 - Build/start: `docker-compose up --build -d`
 - Stop: `docker-compose down`
 - Logs: `docker-compose logs -f`
 
-### Ansible Deployment
+### Ansible Deployment (Jenkins)
 
-Use playbooks in `ansible/` for remote deployment and SSL setup.
+Deployment does two things:
+- Starts/updates Docker containers (`mongodb`, `backend`, `frontend`) on the target server
+- Renders and copies host Nginx config into `/etc/nginx/conf.d`, then reloads Nginx
 
-Typical flow:
+Jenkins parameters control:
+- `SERVER_NAME`, `NGINX_LISTEN_PORT`
+- `FRONTEND_PORT`, `BACKEND_PORT`, `DB_PORT`
+- `DB_DATA_PATH`
 
-1. Configure server inventory in `ansible/inventory/production.ini`
-2. Configure production vars in `ansible/vars/production.yml`
-3. Deploy:
+Setup:
+
+1. Copy inventory example:
+```bash
+cp ansible/inventory/production.ini.example ansible/inventory/production.ini
+```
+2. Copy vars example:
+```bash
+cp ansible/vars/production.yml.example ansible/vars/production.yml
+```
+3. Update:
+- `ansible/inventory/production.ini`
+- `ansible/vars/production.yml`
+
+Run:
 
 ```bash
-ansible-playbook -i ansible/inventory/production.ini ansible/deploy.yml
+ansible-playbook -i ansible/inventory/production.ini ansible/deploy-nginx.yml
 ```
 
-For custom SSL certificates:
+Jenkins stage example:
 
 ```bash
-ansible-playbook -i ansible/inventory/production.ini ansible/ssl-custom.yml
+cp ansible/inventory/production.ini.example ansible/inventory/production.ini
+cp ansible/vars/production.yml.example ansible/vars/production.yml
+ansible-playbook -i ansible/inventory/production.ini ansible/deploy-nginx.yml
 ```
-
-Place certificate files in `certificates/` as:
-- `fullchain.pem`
-- `privkey.pem`
 
 ## Useful Commands
 
@@ -132,7 +149,6 @@ docker-compose ps
 # logs
 docker-compose logs -f backend
 docker-compose logs -f frontend
-docker-compose logs -f nginx
 docker-compose logs -f mongodb
 
 # rebuild and restart
@@ -145,9 +161,8 @@ docker-compose up --build -d
 expenseHub/
   backend/        API and business logic
   frontend/       Web application
-  nginx/          Reverse proxy configuration
-  ansible/        Deployment automation
-  certificates/   SSL certificate files (not committed)
+  nginx/          Sample host nginx vhost configuration
+  ansible/        Deployment automation (nginx template + copy/reload)
 ```
 
 ## API Surface (High Level)
@@ -165,7 +180,6 @@ expenseHub/
 
 - Change default admin credentials in production
 - Use a strong `JWT_SECRET`
-- Never commit SSL private keys
 - Keep production environment secrets outside version control
 
 ## License

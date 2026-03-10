@@ -31,8 +31,8 @@ logs-backend: ## View backend logs
 logs-frontend: ## View frontend logs
 	docker compose logs -f frontend
 
-logs-nginx: ## View nginx logs
-	docker compose logs -f nginx
+logs-nginx: ## View host nginx logs (Linux systemd)
+	sudo journalctl -u nginx -f
 
 clean: ## Remove all containers, volumes, and images
 	docker compose down -v --rmi all
@@ -78,18 +78,9 @@ health: ## Check health status of all services
 	@docker compose ps
 
 # Deployment targets
-deploy-prod: ## Deploy to production (Digital Ocean)
-	@echo "Deploying to production..."
-	@./scripts/deploy.sh
-
-deploy-check: ## Test connection to production server
-	@ansible production -i ansible/inventory/production.ini -m ping
-
-deploy-ssl: ## Set up SSL on production
-	@ansible-playbook -i ansible/inventory/production.ini ansible/ssl-setup.yml
-
-deploy-rollback: ## Rollback to previous version
-	@ansible-playbook -i ansible/inventory/production.ini ansible/rollback.yml
+deploy-prod: ## Deploy nginx config to production via Ansible
+	@echo "Deploying nginx config with Ansible..."
+	@ansible-playbook -i ansible/inventory/production.ini ansible/deploy-nginx.yml
 
 deploy-logs: ## View production logs (requires DROPLET_IP env var)
 	@ssh root@$(DROPLET_IP) 'cd /opt/expensehub && docker compose logs -f'

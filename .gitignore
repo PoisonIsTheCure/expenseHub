@@ -29,14 +29,9 @@ Thumbs.db
 # Docker
 *.log
 
-# Ansible
+# Ansible local deployment config
 ansible/vars/production.yml
 ansible/inventory/production.ini
-
-# SSL Certificates (keep the folder but ignore certificate files)
-certificates/*.pem
-certificates/*.crt
-certificates/*.key
 
 # Test coverage
 coverage/
@@ -45,4 +40,5 @@ coverage/
 # Temporary files
 tmp/
 temp/
+data/
 
