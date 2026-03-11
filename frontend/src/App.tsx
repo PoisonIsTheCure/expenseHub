@@ -9,6 +9,7 @@ import Expenses from './pages/Expenses';
 import Households from './pages/Households';
 import HouseholdDetail from './pages/HouseholdDetail';
 import Budget from './pages/Budget';
+import Analytics from './pages/Analytics';
 import Admin from './pages/Admin';
 
 function App() {
@@ -61,6 +62,15 @@ function App() {
             element={
               <PrivateRoute>
                 <Budget />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/analytics"
+            element={
+              <PrivateRoute>
+                <Analytics />
               </PrivateRoute>
             }
           />

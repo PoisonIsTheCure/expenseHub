@@ -66,6 +66,14 @@ const Layout = ({ children }: LayoutProps) => {
                   >
                     Budget
                   </Link>
+                  <Link
+                    to="/analytics"
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${
+                      isActive('/analytics') ? 'bg-primary-100 text-primary-700' : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    Analytics
+                  </Link>
                   {user.role === 'admin' && (
                     <Link
                       to="/admin"
@@ -162,6 +170,15 @@ const Layout = ({ children }: LayoutProps) => {
               >
                 Budget
               </Link>
+              <Link
+                to="/analytics"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  isActive('/analytics') ? 'bg-primary-100 text-primary-700' : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Analytics
+              </Link>
               {user.role === 'admin' && (
                 <Link
                   to="/admin"
@@ -190,7 +207,7 @@ const Layout = ({ children }: LayoutProps) => {
       {/* Mobile Bottom Navigation */}
       {user && (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-          <div className="grid grid-cols-4 gap-1">
+          <div className="grid grid-cols-5 gap-1">
             <Link
               to="/"
               className={`flex flex-col items-center py-2 px-1 ${
@@ -234,6 +251,17 @@ const Layout = ({ children }: LayoutProps) => {
                 <path fillRule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
               <span className="text-xs">Budget</span>
+            </Link>
+            <Link
+              to="/analytics"
+              className={`flex flex-col items-center py-2 px-1 ${
+                isActive('/analytics') ? 'text-primary-600' : 'text-gray-600'
+              }`}
+            >
+              <svg className="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M2 11a1 1 0 011-1h3a1 1 0 011 1v6a1 1 0 11-2 0v-5H3a1 1 0 01-1-1zm6-6a1 1 0 011-1h3a1 1 0 011 1v12a1 1 0 11-2 0V6H9a1 1 0 01-1-1zm6 3a1 1 0 011-1h2a1 1 0 011 1v10a1 1 0 11-2 0V9h-1a1 1 0 01-1-1z" clipRule="evenodd" />
+              </svg>
+              <span className="text-xs">Analytics</span>
             </Link>
           </div>
         </nav>

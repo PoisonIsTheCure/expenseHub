@@ -34,6 +34,12 @@ const Budget = () => {
   }, [dispatch]);
 
   useEffect(() => {
+    households.forEach((household) => {
+      dispatch(fetchHouseholdBudget(household._id));
+    });
+  }, [dispatch, households]);
+
+  useEffect(() => {
     if (error) {
       showError(error);
     }
@@ -50,7 +56,7 @@ const Budget = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setFormData({ monthlyLimit: '', currency: 'EUR', contributionAmount: '', contributionComment: '' });
+    setFormData({ monthlyLimit: '', currency: DEFAULT_CURRENCY, contributionAmount: '', contributionComment: '' });
     setSelectedHousehold('');
   };
 

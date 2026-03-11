@@ -24,6 +24,7 @@ const Expenses = () => {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [filter, setFilter] = useState<'all' | 'personal' | 'household'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [exportHouseholdId, setExportHouseholdId] = useState<string>('');
 
   useEffect(() => {
     dispatch(fetchExpenses());
@@ -36,6 +37,12 @@ const Expenses = () => {
       showError(error);
     }
   }, [error, showError]);
+
+  useEffect(() => {
+    if (filter === 'personal') {
+      setExportHouseholdId('');
+    }
+  }, [filter]);
 
   const filteredExpenses = useMemo(() => {
     let filtered = [...expenses];
@@ -124,9 +131,24 @@ const Expenses = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Expenses</h1>
           <div className="flex gap-2 w-full sm:w-auto">
+            {filter !== 'personal' && households.length > 0 && (
+              <select
+                value={exportHouseholdId}
+                onChange={(e) => setExportHouseholdId(e.target.value)}
+                className="input flex-1 sm:flex-none"
+                aria-label="Filter export by household"
+              >
+                <option value="">All households</option>
+                {households.map((household) => (
+                  <option key={household._id} value={household._id}>
+                    {household.name}
+                  </option>
+                ))}
+              </select>
+            )}
             <ExportButton 
               type="expenses" 
-              householdId={filter === 'household' ? households[0]?._id : undefined}
+              householdId={exportHouseholdId || undefined}
               className="flex-1 sm:flex-none"
             />
             <button onClick={() => setIsModalOpen(true)} className="btn btn-primary flex-1 sm:flex-none">
