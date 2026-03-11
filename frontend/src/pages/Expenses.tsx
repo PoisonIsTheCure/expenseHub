@@ -207,6 +207,8 @@ const Expenses = () => {
           isOpen={isModalOpen}
           onClose={handleCloseModal}
           title={editingExpense ? 'Edit Expense' : 'Add New Expense'}
+          maxWidthClass="sm:max-w-2xl"
+          bodyClassName="pr-1"
         >
           <ExpenseForm
             onSubmit={editingExpense ? handleUpdateExpense : handleCreateExpense}

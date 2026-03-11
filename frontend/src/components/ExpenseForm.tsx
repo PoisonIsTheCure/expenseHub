@@ -74,82 +74,84 @@ const ExpenseForm = ({ onSubmit, onCancel, initialData, households = [] }: Expen
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-7">
+      <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-4 sm:p-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+          <div>
+            <label className="label">Amount</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              required
+              value={formData.amount}
+              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+              className="input w-full"
+              placeholder="0.00"
+            />
+          </div>
+          <div>
+            <label className="label">Date</label>
+            <input
+              type="date"
+              required
+              value={formData.date}
+              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              className="input w-full"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-4 sm:space-y-5">
         <div>
-          <label className="label">Amount</label>
+          <label className="label">Description</label>
           <input
-            type="number"
-            step="0.01"
-            min="0"
+            type="text"
             required
-            value={formData.amount}
-            onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             className="input w-full"
-            placeholder="0.00"
+            placeholder="What did you spend on?"
           />
         </div>
-        {/* Currency is now fixed to EUR - no selection needed */}
-      </div>
 
-      <div>
-        <label className="label">Description</label>
-        <input
-          type="text"
-          required
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          className="input w-full"
-          placeholder="What did you spend on?"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="label">Category</label>
-          <select
-            value={formData.category}
-            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-            className="input w-full"
-          >
-            {EXPENSE_CATEGORIES.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="label">Date</label>
-          <input
-            type="date"
-            required
-            value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-            className="input w-full"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+          <div>
+            <label className="label">Category</label>
+            <select
+              value={formData.category}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              className="input w-full"
+            >
+              {EXPENSE_CATEGORIES.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </div>
+          {households.length > 0 && (
+            <div>
+              <label className="label">Household (Optional)</label>
+              <select
+                value={typeof formData.householdId === 'string' ? formData.householdId : ''}
+                onChange={(e) => setFormData({ ...formData, householdId: e.target.value })}
+                className="input w-full"
+              >
+                <option value="">Personal Expense</option>
+                {households.map((household) => (
+                  <option key={household._id} value={household._id}>
+                    {household.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       </div>
 
-      {households.length > 0 && (
-        <div>
-          <label className="label">Household (Optional)</label>
-          <select
-            value={typeof formData.householdId === 'string' ? formData.householdId : ''}
-            onChange={(e) => setFormData({ ...formData, householdId: e.target.value })}
-            className="input w-full"
-          >
-            <option value="">Personal Expense</option>
-            {households.map((household) => (
-              <option key={household._id} value={household._id}>
-                {household.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      <div>
+      <div className="rounded-xl border border-dashed border-gray-300 p-4 sm:p-5">
         <label className="label">Receipts (Optional)</label>
         <input
           type="file"
@@ -160,21 +162,21 @@ const ExpenseForm = ({ onSubmit, onCancel, initialData, households = [] }: Expen
           className="input w-full"
         />
         {uploadError && (
-          <p className="text-sm text-red-600 mt-1">{uploadError}</p>
+          <p className="text-sm text-red-600 mt-2">{uploadError}</p>
         )}
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-gray-500 mt-2">
           Upload images or PDF files (max 10MB each, up to 5 files)
         </p>
         {existingAttachments.length > 0 && (
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 mt-2">
             This expense already has {existingAttachments.length} attachment{existingAttachments.length > 1 ? 's' : ''}.
             New files will be added.
           </p>
         )}
         {selectedFiles && selectedFiles.length > 0 && (
-          <div className="mt-2">
+          <div className="mt-3">
             <p className="text-sm font-medium text-gray-700">Selected files:</p>
-            <ul className="text-sm text-gray-600">
+            <ul className="mt-1 text-sm text-gray-600 space-y-1">
               {Array.from(selectedFiles).map((file, index) => (
                 <li key={index}>• {file.name}</li>
               ))}
@@ -183,11 +185,11 @@ const ExpenseForm = ({ onSubmit, onCancel, initialData, households = [] }: Expen
         )}
       </div>
 
-      <div className="flex gap-3 pt-4">
-        <button type="submit" disabled={uploading} className="btn btn-primary flex-1">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 sm:pt-2">
+        <button type="submit" disabled={uploading} className="btn btn-primary w-full">
           {uploading ? 'Uploading...' : (initialData ? 'Update' : 'Create')} Expense
         </button>
-        <button type="button" onClick={onCancel} className="btn btn-secondary flex-1">
+        <button type="button" onClick={onCancel} className="btn btn-secondary w-full">
           Cancel
         </button>
       </div>

@@ -5,9 +5,18 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   children: ReactNode;
+  maxWidthClass?: string;
+  bodyClassName?: string;
 }
 
-const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
+const Modal = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+  maxWidthClass = 'sm:max-w-lg',
+  bodyClassName = '',
+}: ModalProps) => {
   if (!isOpen) return null;
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -25,7 +34,9 @@ const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
           aria-hidden="true"
         />
 
-        <div className="inline-block align-bottom bg-white rounded-t-lg sm:rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full w-full">
+        <div
+          className={`inline-block align-bottom bg-white rounded-t-lg sm:rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle ${maxWidthClass} sm:w-full w-full`}
+        >
           <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
@@ -39,7 +50,7 @@ const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
                 </svg>
               </button>
             </div>
-            <div className="max-h-[70vh] overflow-y-auto">{children}</div>
+            <div className={`max-h-[70vh] overflow-y-auto ${bodyClassName}`.trim()}>{children}</div>
           </div>
         </div>
       </div>
