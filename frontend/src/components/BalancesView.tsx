@@ -120,14 +120,14 @@ const BalancesView = ({ householdId }: BalancesViewProps) => {
             {debts.map((debt, index) => (
               <div
                 key={index}
-                className="bg-white border rounded-lg p-4 shadow-sm flex items-center justify-between"
+                className="bg-white border rounded-lg p-4 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
               >
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                  <div className="flex items-center space-x-2 min-w-0">
                     <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-semibold">
                       {debt.fromUser.name.charAt(0)}
                     </div>
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-gray-900 break-words">
                       {debt.fromUser.name}
                     </span>
                   </div>
@@ -146,16 +146,16 @@ const BalancesView = ({ householdId }: BalancesViewProps) => {
                       />
                     </svg>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 min-w-0">
                     <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-semibold">
                       {debt.toUser.name.charAt(0)}
                     </div>
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-gray-900 break-words">
                       {debt.toUser.name}
                     </span>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-left sm:text-right self-start sm:self-auto">
                   <p className="text-lg font-semibold text-gray-900">
                     {symbol}
                     {debt.amount.toFixed(2)}

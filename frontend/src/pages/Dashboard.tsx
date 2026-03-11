@@ -56,9 +56,9 @@ const Dashboard = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <Link to="/expenses" className="btn btn-primary">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
+          <Link to="/expenses" className="btn btn-primary w-full sm:w-auto text-center">
             Add Expense
           </Link>
         </div>
@@ -119,12 +119,12 @@ const Dashboard = () => {
             {recentExpenses.length > 0 ? (
               <div className="space-y-3">
                 {recentExpenses.map((expense) => (
-                  <div key={expense._id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <div key={expense._id} className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 p-3 bg-gray-50 rounded-lg">
                     <div>
                       <p className="font-medium text-gray-900">{expense.description}</p>
                       <p className="text-sm text-gray-600">{expense.category}</p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-left sm:text-right">
                       <p className="font-semibold text-gray-900">€{expense.amount.toFixed(2)}</p>
                       <p className="text-xs text-gray-500">{new Date(expense.date).toLocaleDateString()}</p>
                     </div>

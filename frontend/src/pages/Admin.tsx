@@ -75,9 +75,9 @@ const Admin = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
-          <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Admin Panel</h1>
+          <button onClick={() => setIsModalOpen(true)} className="btn btn-primary w-full sm:w-auto">
             Create User
           </button>
         </div>
@@ -88,7 +88,43 @@ const Admin = () => {
           {loading ? (
             <p className="text-gray-500 text-center py-8">Loading users...</p>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="md:hidden space-y-3">
+              {users.map((user) => (
+                <div key={user._id || user.id} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-gray-900">{user.name}</p>
+                      <p className="text-sm text-gray-600 break-all">{user.email}</p>
+                    </div>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        user.role === 'admin'
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-blue-100 text-blue-800'
+                      }`}
+                    >
+                      {user.role}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between">
+                    <p className="text-sm text-gray-600">Household: {user.householdId ? 'Yes' : 'No'}</p>
+                    <button
+                      onClick={() => handleDeleteUser(user._id || user.id)}
+                      disabled={(user._id || user.id) === currentUser?.id}
+                      className={`text-sm ${
+                        (user._id || user.id) === currentUser?.id
+                          ? 'text-gray-400 cursor-not-allowed'
+                          : 'text-red-600 hover:text-red-800'
+                      }`}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
@@ -136,6 +172,7 @@ const Admin = () => {
                 </tbody>
               </table>
             </div>
+            </>
           )}
 
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">

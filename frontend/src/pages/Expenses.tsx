@@ -130,12 +130,12 @@ const Expenses = () => {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Expenses</h1>
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 w-full sm:w-auto">
             {filter !== 'personal' && households.length > 0 && (
               <select
                 value={exportHouseholdId}
                 onChange={(e) => setExportHouseholdId(e.target.value)}
-                className="input flex-1 sm:flex-none"
+                className="input w-full sm:w-auto sm:min-w-[12rem]"
                 aria-label="Filter export by household"
               >
                 <option value="">All households</option>
@@ -149,9 +149,9 @@ const Expenses = () => {
             <ExportButton 
               type="expenses" 
               householdId={exportHouseholdId || undefined}
-              className="flex-1 sm:flex-none"
+              className="w-full sm:w-auto"
             />
-            <button onClick={() => setIsModalOpen(true)} className="btn btn-primary flex-1 sm:flex-none">
+            <button onClick={() => setIsModalOpen(true)} className="btn btn-primary w-full sm:w-auto">
               Add Expense
             </button>
           </div>

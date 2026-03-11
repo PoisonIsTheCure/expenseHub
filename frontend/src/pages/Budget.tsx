@@ -129,11 +129,11 @@ const Budget = () => {
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-4 sm:space-x-8">
+        <div className="border-b border-gray-200 overflow-x-auto">
+          <nav className="-mb-px flex space-x-4 sm:space-x-8 min-w-max">
             <button
               onClick={() => setActiveTab('personal')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                 activeTab === 'personal'
                   ? 'border-primary-500 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -143,7 +143,7 @@ const Budget = () => {
             </button>
             <button
               onClick={() => setActiveTab('household')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                 activeTab === 'household'
                   ? 'border-primary-500 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -250,12 +250,12 @@ const Budget = () => {
                   const budget = householdBudgets[household._id];
                   return (
                     <div key={household._id} className="card">
-                      <div className="flex justify-between items-start mb-4">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">
                         <h3 className="text-lg font-semibold">{household.name}</h3>
-                        <div className="flex gap-2 flex-wrap">
+                        <div className="flex gap-2 flex-wrap w-full sm:w-auto">
                           <button
                             onClick={() => handleOpenModal('household', household._id)}
-                            className="btn btn-secondary btn-sm"
+                            className="btn btn-secondary btn-sm flex-1 sm:flex-none"
                           >
                             {budget ? 'Update Budget' : 'Set Budget'}
                           </button>
@@ -263,7 +263,7 @@ const Budget = () => {
                             <>
                               <button
                                 onClick={() => handleOpenModal('contribution', household._id)}
-                                className="btn btn-primary btn-sm"
+                                className="btn btn-primary btn-sm flex-1 sm:flex-none"
                               >
                                 Add Contribution
                               </button>
@@ -271,7 +271,7 @@ const Budget = () => {
                                 type="household-budget"
                                 householdId={household._id}
                                 householdName={household.name}
-                                className="btn-sm"
+                                className="btn-sm flex-1 sm:flex-none"
                               />
                             </>
                           )}

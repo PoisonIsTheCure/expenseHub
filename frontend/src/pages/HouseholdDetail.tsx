@@ -177,7 +177,7 @@ const HouseholdDetail = () => {
     <Layout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <button
               onClick={() => navigate('/households')}
@@ -185,14 +185,14 @@ const HouseholdDetail = () => {
             >
               ← Back to Households
             </button>
-            <h1 className="text-3xl font-bold text-gray-900">{currentHousehold.name}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{currentHousehold.name}</h1>
             <p className="text-gray-600 mt-1">
               Created by {currentHousehold.createdBy.name}
               {isCreator && <span className="ml-2 text-primary-600">(You)</span>}
             </p>
           </div>
           {isCreator && (
-            <button onClick={() => setIsBudgetModalOpen(true)} className="btn btn-primary">
+            <button onClick={() => setIsBudgetModalOpen(true)} className="btn btn-primary w-full sm:w-auto">
               Manage Budget
             </button>
           )}
@@ -211,10 +211,10 @@ const HouseholdDetail = () => {
         )}
 
         {/* Tab Navigation */}
-        <div className="flex gap-4 border-b border-gray-200">
+        <div className="flex gap-2 sm:gap-4 border-b border-gray-200 overflow-x-auto">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+            className={`px-3 sm:px-4 py-2 font-medium whitespace-nowrap transition-colors border-b-2 ${
               activeTab === 'overview'
                 ? 'border-blue-600 text-blue-600'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
@@ -224,7 +224,7 @@ const HouseholdDetail = () => {
           </button>
           <button
             onClick={() => setActiveTab('balances')}
-            className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+            className={`px-3 sm:px-4 py-2 font-medium whitespace-nowrap transition-colors border-b-2 ${
               activeTab === 'balances'
                 ? 'border-blue-600 text-blue-600'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
@@ -239,12 +239,12 @@ const HouseholdDetail = () => {
           <>
             {/* Members Section */}
         <div className="card">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-semibold text-gray-900">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
               Members ({currentHousehold.members.length})
             </h2>
             {isCreator && (
-              <button onClick={() => setIsAddMemberModalOpen(true)} className="btn btn-secondary">
+              <button onClick={() => setIsAddMemberModalOpen(true)} className="btn btn-secondary w-full sm:w-auto">
                 Add Member
               </button>
             )}
@@ -258,7 +258,7 @@ const HouseholdDetail = () => {
               return (
                 <div
                   key={memberId}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 bg-gray-50 rounded-lg"
                 >
                   <div>
                     <p className="font-medium text-gray-900">
@@ -275,7 +275,7 @@ const HouseholdDetail = () => {
                   {isCreator && !isMemberCreator && (
                     <button
                       onClick={() => handleRemoveMember(memberId, member.name)}
-                      className="text-red-600 hover:text-red-700 text-sm font-medium"
+                      className="text-red-600 hover:text-red-700 text-sm font-medium self-start sm:self-auto"
                     >
                       Remove
                     </button>
@@ -288,9 +288,9 @@ const HouseholdDetail = () => {
 
         {/* Contributions Section */}
         <div className="card">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-semibold text-gray-900">Contributions</h2>
-            <button onClick={() => setIsAddContributionModalOpen(true)} className="btn btn-primary">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">Contributions</h2>
+            <button onClick={() => setIsAddContributionModalOpen(true)} className="btn btn-primary w-full sm:w-auto">
               Add Contribution
             </button>
           </div>
@@ -315,12 +315,12 @@ const HouseholdDetail = () => {
               <div className="space-y-4">
                 {contributionStats.memberStats.map((stat) => (
                   <div key={stat.user._id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                       <div>
                         <p className="font-semibold text-gray-900">{stat.user.name}</p>
                         <p className="text-sm text-gray-600">{stat.count} contributions</p>
                       </div>
-                      <div className="text-right">
+                      <div className="text-left sm:text-right">
                         <p className="text-lg font-bold text-gray-900">
                           {getCurrencySymbol()}
                           {stat.total.toLocaleString(undefined, {
@@ -377,11 +377,11 @@ const HouseholdDetail = () => {
         {/* Balances & Settlements Tab */}
         {activeTab === 'balances' && id && (
           <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-semibold text-gray-900">Balances & Settlements</h2>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">Balances & Settlements</h2>
               <button
                 onClick={() => setIsSettlementModalOpen(true)}
-                className="btn btn-primary"
+                className="btn btn-primary w-full sm:w-auto"
               >
                 Record Settlement
               </button>

@@ -148,16 +148,16 @@ const AttachmentViewer = ({ attachments, isOpen, onClose, initialIndex = 0 }: At
     <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4 overflow-y-auto">
       <div className="bg-white rounded-lg max-w-4xl w-full h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <div className="flex items-center gap-4">
-            <h3 className="text-lg font-semibold text-gray-900">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border-b">
+          <div className="min-w-0">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 break-all">
               {currentAttachment.originalName}
             </h3>
             <span className="text-sm text-gray-500">
               {formatFileSize(currentAttachment.size)}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {attachments.length > 1 && (
               <div className="flex items-center gap-2">
                 <button

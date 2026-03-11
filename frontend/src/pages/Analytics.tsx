@@ -228,9 +228,9 @@ const Analytics = () => {
 
   return (
     <Layout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="space-y-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Analytics</h1>
           <p className="text-gray-600 mt-2">
             View insights and trends for your expenses
           </p>
@@ -238,10 +238,10 @@ const Analytics = () => {
 
         {/* View Selector */}
         <div className="mb-6 flex flex-col sm:flex-row gap-4">
-          <div className="flex bg-gray-100 rounded-lg p-1">
+          <div className="flex bg-gray-100 rounded-lg p-1 w-full sm:w-auto">
             <button
               onClick={() => setSelectedView('personal')}
-              className={`px-4 py-2 rounded-md font-medium transition-colors ${
+              className={`px-4 py-2 rounded-md font-medium transition-colors flex-1 sm:flex-none ${
                 selectedView === 'personal'
                   ? 'bg-white text-blue-600 shadow'
                   : 'text-gray-600 hover:text-gray-900'
@@ -251,7 +251,7 @@ const Analytics = () => {
             </button>
             <button
               onClick={() => setSelectedView('household')}
-              className={`px-4 py-2 rounded-md font-medium transition-colors ${
+              className={`px-4 py-2 rounded-md font-medium transition-colors flex-1 sm:flex-none ${
                 selectedView === 'household'
                   ? 'bg-white text-blue-600 shadow'
                   : 'text-gray-600 hover:text-gray-900'
@@ -265,7 +265,7 @@ const Analytics = () => {
             <select
               value={selectedHousehold}
               onChange={(e) => setSelectedHousehold(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="input w-full sm:w-auto"
             >
               <option value="">Select household...</option>
               {households.map((household) => (

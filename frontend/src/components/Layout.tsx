@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
@@ -21,6 +21,10 @@ const Layout = ({ children }: LayoutProps) => {
   };
 
   const isActive = (path: string) => location.pathname === path;
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -267,7 +271,11 @@ const Layout = ({ children }: LayoutProps) => {
         </nav>
       )}
 
-      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8 ${user ? 'pb-16 md:pb-8' : ''}`}>
+      <main
+        className={`max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 md:py-8 ${
+          user ? 'pb-24 md:pb-8' : ''
+        }`}
+      >
         {children}
       </main>
     </div>

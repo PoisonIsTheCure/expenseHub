@@ -51,9 +51,9 @@ const Households = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">Households</h1>
-          <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Households</h1>
+          <button onClick={() => setIsModalOpen(true)} className="btn btn-primary w-full sm:w-auto">
             Create Household
           </button>
         </div>
@@ -74,7 +74,7 @@ const Households = () => {
               const isCreator = household.createdBy._id === user?.id || household.createdBy.id === user?.id;
               return (
                 <div key={household._id} className="card hover:shadow-lg transition-shadow">
-                  <div className="flex items-start justify-between mb-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
                     <h3 className="text-xl font-semibold text-gray-900">{household.name}</h3>
                     {isCreator && (
                       <span className="px-2 py-1 bg-primary-100 text-primary-700 text-xs rounded-full">
@@ -105,7 +105,7 @@ const Households = () => {
                     </div>
                   </div>
 
-                  <div className="flex gap-2 pt-4 border-t">
+                  <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t">
                     <button
                       onClick={() => navigate(`/households/${household._id}`)}
                       className="btn btn-primary flex-1 text-sm"
@@ -115,14 +115,14 @@ const Households = () => {
                     {isCreator || user?.role === 'admin' ? (
                       <button
                         onClick={() => handleDeleteHousehold(household._id, household.createdBy._id || household.createdBy.id)}
-                        className="btn btn-danger text-sm"
+                        className="btn btn-danger text-sm sm:w-auto"
                       >
                         Delete
                       </button>
                     ) : (
                       <button
                         onClick={() => handleLeaveHousehold(household._id, household.createdBy._id || household.createdBy.id)}
-                        className="btn btn-secondary text-sm"
+                        className="btn btn-secondary text-sm sm:w-auto"
                       >
                         Leave
                       </button>

@@ -37,8 +37,8 @@ const ExpenseCard = ({ expense, onEdit, onDelete, currentUserId }: ExpenseCardPr
 
   return (
     <div className="card hover:shadow-lg transition-shadow">
-      <div className="flex justify-between items-start">
-        <div className="flex-1">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(expense.category)}`}>
               {expense.category}
@@ -49,12 +49,12 @@ const ExpenseCard = ({ expense, onEdit, onDelete, currentUserId }: ExpenseCardPr
               </span>
             )}
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">{expense.description}</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-1 break-words">{expense.description}</h3>
           <p className="text-sm text-gray-600">
             By {expense.ownerId.name} • {date}
           </p>
         </div>
-        <div className="text-right ml-4">
+        <div className="text-left sm:text-right sm:ml-4">
           <p className="text-2xl font-bold text-gray-900">
             {getCurrencySymbol()}{expense.amount.toFixed(2)}
           </p>
