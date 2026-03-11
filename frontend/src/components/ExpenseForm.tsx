@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import axios from 'axios';
 import { EXPENSE_CATEGORIES, Expense } from '../types';
 import { DEFAULT_CURRENCY } from '../config/currency';
 import { uploadAPI } from '../services/api';
 
 interface ExpenseFormProps {
-  onSubmit: (data: any) => void;
+  onSubmit: (data: any) => void | Promise<void>;
   onCancel: () => void;
   initialData?: Expense | null;
   households?: Array<{ _id: string; name: string }>;
@@ -21,45 +22,54 @@ const ExpenseForm = ({ onSubmit, onCancel, initialData, households = [] }: Expen
   });
 
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  const [existingAttachments] = useState(initialData?.attachments || []);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setUploading(true);
+    setUploadError('');
     
     try {
       const submitData = {
         ...formData,
         amount: parseFloat(formData.amount),
         householdId: formData.householdId || undefined,
-        attachments: [] as any[],
+        attachments: [...existingAttachments] as any[],
       };
       
       // Upload files first if any
       if (selectedFiles && selectedFiles.length > 0) {
         const files = Array.from(selectedFiles);
-        const uploadResponse = await uploadAPI.uploadFiles(files);
-        submitData.attachments = uploadResponse.data.files || [];
+        try {
+          const uploadResponse = await uploadAPI.uploadFiles(files);
+          submitData.attachments = [
+            ...submitData.attachments,
+            ...(uploadResponse.data.files || []),
+          ];
+        } catch (error) {
+          console.error('Error uploading files:', error);
+          const backendMessage = axios.isAxiosError(error)
+            ? error.response?.data?.message
+            : undefined;
+          setUploadError(backendMessage || 'Failed to upload attachments. Please try again.');
+          return;
+        }
       }
       
       // Submit expense data with file metadata
-      onSubmit(submitData);
+      await Promise.resolve(onSubmit(submitData));
     } catch (error) {
-      console.error('Error uploading files:', error);
-      // Still submit the expense without attachments
-      const submitData = {
-        ...formData,
-        amount: parseFloat(formData.amount),
-        householdId: formData.householdId || undefined,
-        attachments: [],
-      };
-      onSubmit(submitData);
+      console.error('Error submitting expense:', error);
+      setUploadError('Failed to save expense. Please try again.');
     } finally {
       setUploading(false);
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploadError('');
     setSelectedFiles(e.target.files);
   };
 
@@ -149,9 +159,18 @@ const ExpenseForm = ({ onSubmit, onCancel, initialData, households = [] }: Expen
           onChange={handleFileChange}
           className="input w-full"
         />
+        {uploadError && (
+          <p className="text-sm text-red-600 mt-1">{uploadError}</p>
+        )}
         <p className="text-sm text-gray-500 mt-1">
           Upload images or PDF files (max 10MB each, up to 5 files)
         </p>
+        {existingAttachments.length > 0 && (
+          <p className="text-sm text-gray-500 mt-1">
+            This expense already has {existingAttachments.length} attachment{existingAttachments.length > 1 ? 's' : ''}.
+            New files will be added.
+          </p>
+        )}
         {selectedFiles && selectedFiles.length > 0 && (
           <div className="mt-2">
             <p className="text-sm font-medium text-gray-700">Selected files:</p>

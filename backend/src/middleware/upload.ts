@@ -1,11 +1,17 @@
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 import { Request } from 'express';
+
+const uploadsDir = path.resolve(__dirname, '../../uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // Configure storage
 const storage = multer.diskStorage({
   destination: (req: Request, file: any, cb: any) => {
-    cb(null, 'uploads/');
+    cb(null, uploadsDir);
   },
   filename: (req: Request, file: any, cb: any) => {
     // Generate unique filename with timestamp
@@ -23,6 +29,7 @@ const fileFilter = (req: Request, file: any, cb: any) => {
     'image/png',
     'image/gif',
     'image/webp',
+    'image/heic',
     'application/pdf'
   ];
 

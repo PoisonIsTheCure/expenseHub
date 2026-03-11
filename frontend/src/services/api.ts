@@ -15,6 +15,15 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  // For FormData requests, let the browser set multipart boundaries.
+  // A pre-set JSON content type can make multer receive no files.
+  if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+    if (config.headers && 'Content-Type' in config.headers) {
+      delete config.headers['Content-Type'];
+    }
+  }
+
   return config;
 });
 
@@ -41,11 +50,8 @@ export const uploadAPI = {
       formData.append('receipts', file);
     });
 
-    return api.post('/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    // Let the browser set multipart boundary automatically.
+    return api.post('/upload', formData);
   },
 
   getAttachmentUrl: (filename: string) => {
