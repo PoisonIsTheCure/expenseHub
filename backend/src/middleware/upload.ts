@@ -30,6 +30,9 @@ const fileFilter = (req: Request, file: any, cb: any) => {
     'image/gif',
     'image/webp',
     'image/heic',
+    'image/heif',
+    'image/heic-sequence',
+    'image/heif-sequence',
     'application/pdf'
   ];
 

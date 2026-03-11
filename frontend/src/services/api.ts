@@ -64,13 +64,16 @@ export const uploadAPI = {
     });
   },
 
-  downloadAttachment: (filename: string, originalName: string) => {
+  downloadAttachment: async (filename: string, originalName: string) => {
+    const response = await uploadAPI.getAttachment(filename);
+    const blobUrl = URL.createObjectURL(response.data);
     const link = document.createElement('a');
-    link.href = uploadAPI.getAttachmentUrl(filename);
+    link.href = blobUrl;
     link.download = originalName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(blobUrl);
   },
 };
 
